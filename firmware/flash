@@ -1,0 +1,13 @@
+#!/bin/bash
+
+source_dir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+cd "$source_dir"
+
+st-util &
+
+arm-none-eabi-gdb build/g5500-ethernet-controller.elf \
+	--batch \
+	-ex 'target extended-remote :4242' \
+	-ex 'load'
+
+kill %1
