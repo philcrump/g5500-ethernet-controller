@@ -1,20 +1,25 @@
 #!/bin/bash
 
 source_dir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
-cd "$source_dir"
+cd "${source_dir}"
 
 CHIBIOS_SRC="${source_dir}/ChibiOS"
 LWIP_SRC="${CHIBIOS_SRC}/ext/lwip/"
 
-# Unpack LwIP
-if [ ! -d "${LWIP_SRC}" ]; then
-  echo "LWIP Directory not found, unpacking..";
+unpack_lwip () {
   cd "${CHIBIOS_SRC}/ext/";
   7z x lwip-*.7z;
   if [ ! -d "${LWIP_SRC}" ]; then
     echo "Unpacking LWIP failed! Exiting..";
     exit 1;
   fi
+  cd "${source_dir}";
+}
+
+# Unpack LwIP
+if [ ! -d "${LWIP_SRC}" ]; then
+  echo "LWIP Directory not found, unpacking..";
+  unpack_lwip;
 fi
 
 # Patch LwIP bindings for using system time lib
