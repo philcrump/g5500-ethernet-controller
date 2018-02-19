@@ -1,0 +1,372 @@
+EESchema Schematic File Version 4
+EELAYER 26 0
+EELAYER END
+$Descr A3 16535 11693
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L MCU_Module:NUCLEO144-F429ZI U1
+U 1 1 5A89E0A2
+P 7770 6050
+F 0 "U1" H 7770 10028 50  0000 C CNN
+F 1 "NUCLEO144-F429ZI" H 7770 9937 50  0000 C CNN
+F 2 "Module:ST_Morpho_Connector_144_STLink" H 8620 2400 50  0001 L CNN
+F 3 "http://www.st.com/content/ccc/resource/technical/document/data_brief/group0/7b/df/1d/e9/64/55/43/8d/DM00247910/files/DM00247910.pdf/jcr:content/translations/en.DM00247910.pdf" H 6870 6350 50  0001 C CNN
+	1    7770 6050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Relay:G5LE-1 K2
+U 1 1 5A89EE99
+P 11930 4750
+F 0 "K2" V 11363 4750 50  0000 C CNN
+F 1 "G5LE-1" V 11454 4750 50  0000 C CNN
+F 2 "Relay_THT:Relay_SPDT_OMRON-G5LE-1" H 12380 4700 50  0001 L CNN
+F 3 "http://www.omron.com/ecb/products/pdf/en-g5le.pdf" H 11930 4350 50  0001 C CNN
+	1    11930 4750
+	0    1    1    0   
+$EndComp
+$Comp
+L Relay:G5LE-1 K1
+U 1 1 5A89EED7
+P 13200 4450
+F 0 "K1" V 12633 4450 50  0000 C CNN
+F 1 "G5LE-1" V 12724 4450 50  0000 C CNN
+F 2 "Relay_THT:Relay_SPDT_OMRON-G5LE-1" H 13650 4400 50  0001 L CNN
+F 3 "http://www.omron.com/ecb/products/pdf/en-g5le.pdf" H 13200 4050 50  0001 C CNN
+	1    13200 4450
+	0    1    1    0   
+$EndComp
+$Comp
+L Relay:G5LE-1 K3
+U 1 1 5A89EFDA
+P 11950 6330
+F 0 "K3" V 11383 6330 50  0000 C CNN
+F 1 "G5LE-1" V 11474 6330 50  0000 C CNN
+F 2 "Relay_THT:Relay_SPDT_OMRON-G5LE-1" H 12400 6280 50  0001 L CNN
+F 3 "http://www.omron.com/ecb/products/pdf/en-g5le.pdf" H 11950 5930 50  0001 C CNN
+	1    11950 6330
+	0    1    1    0   
+$EndComp
+$Comp
+L Relay:G5LE-1 K4
+U 1 1 5A89F08C
+P 13440 6290
+F 0 "K4" V 12873 6290 50  0000 C CNN
+F 1 "G5LE-1" V 12964 6290 50  0000 C CNN
+F 2 "Relay_THT:Relay_SPDT_OMRON-G5LE-1" H 13890 6240 50  0001 L CNN
+F 3 "http://www.omron.com/ecb/products/pdf/en-g5le.pdf" H 13440 5890 50  0001 C CNN
+	1    13440 6290
+	0    1    1    0   
+$EndComp
+$Comp
+L agg-kicad:CONN_01x03 J?
+U 1 1 5A89F6B2
+P 1660 6900
+F 0 "J?" H 1691 7115 50  0000 C CNN
+F 1 "CONN_01x03" H 1691 7024 50  0000 C CNN
+F 2 "" H 1660 6900 50  0001 C CNN
+F 3 "" H 1660 6900 50  0001 C CNN
+	1    1660 6900
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:CONN_01x03 J?
+U 1 1 5A89F92A
+P 1680 7890
+F 0 "J?" H 1711 8105 50  0000 C CNN
+F 1 "CONN_01x03" H 1711 8014 50  0000 C CNN
+F 2 "" H 1680 7890 50  0001 C CNN
+F 3 "" H 1680 7890 50  0001 C CNN
+	1    1680 7890
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:R R?
+U 1 1 5A89FA32
+P 2220 6890
+F 0 "R?" H 2270 7068 50  0000 C CNN
+F 1 "R" H 2270 6977 50  0000 C CNN
+F 2 "" H 2220 6890 50  0001 C CNN
+F 3 "" H 2220 6890 50  0001 C CNN
+	1    2220 6890
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:R R?
+U 1 1 5A89FB1A
+P 2120 7880
+F 0 "R?" H 2170 8058 50  0000 C CNN
+F 1 "R" H 2170 7967 50  0000 C CNN
+F 2 "" H 2120 7880 50  0001 C CNN
+F 3 "" H 2120 7880 50  0001 C CNN
+	1    2120 7880
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:C C?
+U 1 1 5A89FCE0
+P 1870 7030
+F 0 "C?" V 1874 7088 50  0000 L CNN
+F 1 "C" V 1965 7088 50  0000 L CNN
+F 2 "" H 1870 7030 50  0001 C CNN
+F 3 "" H 1870 7030 50  0001 C CNN
+	1    1870 7030
+	0    1    1    0   
+$EndComp
+$Comp
+L agg-kicad:C C?
+U 1 1 5A89FFB5
+P 1880 8020
+F 0 "C?" V 1884 8078 50  0000 L CNN
+F 1 "C" V 1975 8078 50  0000 L CNN
+F 2 "" H 1880 8020 50  0001 C CNN
+F 3 "" H 1880 8020 50  0001 C CNN
+	1    1880 8020
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6970 9850 6970 9890
+Wire Wire Line
+	6970 9890 7070 9890
+Wire Wire Line
+	8370 9890 8370 9850
+Wire Wire Line
+	8270 9850 8270 9890
+Connection ~ 8270 9890
+Wire Wire Line
+	8270 9890 8370 9890
+Wire Wire Line
+	8170 9850 8170 9890
+Connection ~ 8170 9890
+Wire Wire Line
+	8170 9890 8270 9890
+Wire Wire Line
+	8070 9850 8070 9890
+Connection ~ 8070 9890
+Wire Wire Line
+	8070 9890 8170 9890
+Wire Wire Line
+	7970 9850 7970 9890
+Connection ~ 7970 9890
+Wire Wire Line
+	7970 9890 8070 9890
+Wire Wire Line
+	7870 9850 7870 9890
+Connection ~ 7870 9890
+Wire Wire Line
+	7870 9890 7970 9890
+Wire Wire Line
+	7770 9850 7770 9890
+Connection ~ 7770 9890
+Wire Wire Line
+	7770 9890 7870 9890
+Wire Wire Line
+	7670 9850 7670 9890
+Connection ~ 7670 9890
+Wire Wire Line
+	7670 9890 7770 9890
+Wire Wire Line
+	7570 9850 7570 9890
+Connection ~ 7570 9890
+Wire Wire Line
+	7570 9890 7670 9890
+Wire Wire Line
+	7470 9850 7470 9890
+Connection ~ 7470 9890
+Wire Wire Line
+	7470 9890 7570 9890
+Wire Wire Line
+	7370 9850 7370 9890
+Connection ~ 7370 9890
+Wire Wire Line
+	7370 9890 7470 9890
+Wire Wire Line
+	7270 9850 7270 9890
+Connection ~ 7270 9890
+Wire Wire Line
+	7270 9890 7370 9890
+Wire Wire Line
+	7170 9850 7170 9890
+Connection ~ 7170 9890
+Wire Wire Line
+	7170 9890 7270 9890
+Wire Wire Line
+	7070 9850 7070 9890
+Connection ~ 7070 9890
+Wire Wire Line
+	7070 9890 7170 9890
+$Comp
+L Regulator_Switching:TSR_1-2450 U?
+U 1 1 5A8A18DF
+P 3080 1620
+F 0 "U?" H 3080 1987 50  0000 C CNN
+F 1 "TSR_1-2450" H 3080 1896 50  0000 C CNN
+F 2 "Converters_DCDC_ACDC:DCDC-Conv_TRACO_TSR-1" H 3080 1470 50  0001 L CIN
+F 3 "http://www.tracopower.com/products/tsr1.pdf" H 3080 1620 50  0001 C CNN
+	1    3080 1620
+	1    0    0    -1  
+$EndComp
+$Comp
+L Diode_Bridge:MB4S D?
+U 1 1 5A8A1D23
+P 1780 1530
+F 0 "D?" H 2121 1576 50  0000 L CNN
+F 1 "MB4S" H 2121 1485 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:TO-269AA" H 1930 1655 50  0001 L CNN
+F 3 "http://www.vishay.com/docs/88661/mb2s.pdf" H 1780 1530 50  0001 C CNN
+	1    1780 1530
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:CONN_01x02 J?
+U 1 1 5A8A28D3
+P 920 1480
+F 0 "J?" H 951 1695 50  0000 C CNN
+F 1 "CONN_01x02" H 951 1604 50  0000 C CNN
+F 2 "" H 920 1480 50  0001 C CNN
+F 3 "" H 920 1480 50  0001 C CNN
+	1    920  1480
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1020 1220 1780 1220
+Wire Wire Line
+	1780 1220 1780 1230
+Wire Wire Line
+	1020 1580 1020 1830
+Wire Wire Line
+	1020 1830 1780 1830
+Wire Wire Line
+	1020 1220 1020 1480
+Wire Wire Line
+	2080 1530 2680 1530
+Wire Wire Line
+	2680 1530 2680 1520
+Wire Wire Line
+	1480 1530 1480 2030
+Wire Wire Line
+	1480 2030 3080 2030
+Wire Wire Line
+	3080 2030 3080 1820
+$Comp
+L agg-kicad:MICROUSB J?
+U 1 1 5A8A6608
+P 3130 2810
+F 0 "J?" H 3211 3235 50  0000 C CNN
+F 1 "MICROUSB" H 3211 3144 50  0000 C CNN
+F 2 "agg:MICROUSB_MOLEX_47589-0001" H 2980 2310 50  0001 L CNN
+F 3 "" H 3430 3010 50  0001 C CNN
+F 4 "1568023" H 2980 2210 50  0001 L CNN "Farnell"
+	1    3130 2810
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:CONN_01x02 J?
+U 1 1 5A8A6FF6
+P 10960 5350
+F 0 "J?" H 10991 5565 50  0000 C CNN
+F 1 "CONN_01x02" H 10991 5474 50  0000 C CNN
+F 2 "" H 10960 5350 50  0001 C CNN
+F 3 "" H 10960 5350 50  0001 C CNN
+	1    10960 5350
+	1    0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:CONN_01x03 J?
+U 1 1 5A8A732B
+P 14760 4730
+F 0 "J?" H 14792 4945 50  0000 C CNN
+F 1 "CONN_01x03" H 14792 4854 50  0000 C CNN
+F 2 "" H 14760 4730 50  0001 C CNN
+F 3 "" H 14760 4730 50  0001 C CNN
+	1    14760 4730
+	-1   0    0    -1  
+$EndComp
+$Comp
+L agg-kicad:CONN_01x03 J?
+U 1 1 5A8A771C
+P 14710 6140
+F 0 "J?" H 14742 6355 50  0000 C CNN
+F 1 "CONN_01x03" H 14742 6264 50  0000 C CNN
+F 2 "" H 14710 6140 50  0001 C CNN
+F 3 "" H 14710 6140 50  0001 C CNN
+	1    14710 6140
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	13740 6590 14060 6590
+Wire Wire Line
+	14060 6590 14060 6140
+Wire Wire Line
+	14060 6140 14610 6140
+Wire Wire Line
+	12250 6430 13140 6430
+Wire Wire Line
+	13140 6430 13140 6490
+Wire Wire Line
+	12250 6630 12250 6810
+Wire Wire Line
+	12250 6810 14190 6810
+Wire Wire Line
+	14190 6810 14190 6240
+Wire Wire Line
+	14190 6240 14610 6240
+Wire Wire Line
+	14610 6340 14340 6340
+Wire Wire Line
+	14340 6340 14340 6980
+Wire Wire Line
+	14340 6980 11260 6980
+Wire Wire Line
+	11260 6980 11260 5450
+Wire Wire Line
+	11260 5450 11060 5450
+Wire Wire Line
+	11060 5350 11260 5350
+Wire Wire Line
+	11460 5350 11460 6530
+Wire Wire Line
+	11460 6530 11650 6530
+Wire Wire Line
+	11260 5450 14420 5450
+Wire Wire Line
+	14420 5450 14420 4930
+Wire Wire Line
+	14420 4930 14660 4930
+Connection ~ 11260 5450
+Wire Wire Line
+	14660 4830 14090 4830
+Wire Wire Line
+	14090 4830 14090 5050
+Wire Wire Line
+	14090 5050 12230 5050
+Wire Wire Line
+	12230 4850 12580 4850
+Wire Wire Line
+	12580 4850 12580 4650
+Wire Wire Line
+	12580 4650 12900 4650
+Wire Wire Line
+	13500 4750 13920 4750
+Wire Wire Line
+	13920 4750 13920 4730
+Wire Wire Line
+	13920 4730 14660 4730
+Wire Wire Line
+	11630 4950 11260 4950
+Wire Wire Line
+	11260 4950 11260 5350
+Connection ~ 11260 5350
+Wire Wire Line
+	11260 5350 11460 5350
+$EndSCHEMATC
