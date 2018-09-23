@@ -1,21 +1,3 @@
-#include <stdio.h>
-#include <string.h>
-
-#include "ch.h"
-#include "hal.h"
-#include "chprintf.h"
-#include "shell.h"
-
-#include "lwipthread.h"
-#include "lwip/opt.h"
-#include "lwip/arch.h"
-#include "lwip/api.h"
-#include "lwip/tcp.h"
-#include "lwip/netif.h"
-#include "lwip/sys.h"
-#include "lwip/udp.h"
-
-#include "usb_shell.h"
 #include "../main.h"
 #include "usb/usbcfg.h"
 
@@ -34,14 +16,17 @@ static void cmd_version(BaseSequentialStream *chp, int argc, char *argv[])
     return;
   }
 
-  chprintf(chp, "M0DNY Ethernet Rotator Controller v0\r\n");
+  chprintf(chp, "Phil M0DNY Ethernet Rotator Controller\r\n");
   #ifdef __DATE__
   #ifdef __TIME__
-    chprintf(chp, "Build time:   %s%s%s"SHELL_NEWLINE_STR, __DATE__, " - ", __TIME__);
+    chprintf(chp, "Build time:  %s%s%s"SHELL_NEWLINE_STR, __DATE__, " ", __TIME__);
   #endif
   #endif
   #ifdef PORT_COMPILER_NAME
-    chprintf(chp, "Compiler:     %s"SHELL_NEWLINE_STR, PORT_COMPILER_NAME);
+    chprintf(chp, "Compiler:    %s"SHELL_NEWLINE_STR, PORT_COMPILER_NAME);
+  #endif
+  #ifdef CH_KERNEL_VERSION
+    chprintf(chp, "Kernel:      ChibiOS/RT %s"SHELL_NEWLINE_STR, CH_KERNEL_VERSION);
   #endif
 }
 
@@ -65,7 +50,9 @@ static void cmd_top(BaseSequentialStream *chp, int argc, char *argv[])
 {
   (void)argv;
   static const char *states[] = {CH_STATE_NAMES};
-  uint64_t busy = 0, total = 0;
+  #if CH_DBG_THREADS_PROFILING
+    uint64_t busy = 0, total = 0;
+  #endif
   thread_t *tp;
 
   if (argc > 0) {
@@ -198,10 +185,6 @@ static void cmd_info(BaseSequentialStream *chp, int argc, char *argv[])
   chprintf(chp, "      - IP:            [controller ip address]\r\n");
   chprintf(chp, "      - Port Az:       4001\r\n");
   chprintf(chp, "      - Port El/Az+El: 4002\r\n");
-  chprintf(chp, "  ozimux\r\n");
-  chprintf(chp, "    * UDP broadcast port 55672\r\n");
-  chprintf(chp, "    * Horus ASCII JSON \"{'azimuth':23,'elevation':42}\"\r\n");
-  chprintf(chp, "    * **not yet implemented**\r\n");
 }
 
 static const ShellCommand commands[] = {

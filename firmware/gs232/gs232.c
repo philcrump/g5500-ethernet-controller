@@ -1,33 +1,10 @@
-#include <stdio.h>
-#include <string.h>
-
-#include "ch.h"
-#include "hal.h"
-
-#include "lwipthread.h"
-#include "lwip/opt.h"
-#include "lwip/arch.h"
-#include "lwip/api.h"
-#include "lwip/tcp.h"
-#include "lwip/udp.h"
-#include "lwip/sys.h"
-
-#include "gs232.h"
 #include "../main.h"
-#include "../tracking/tracking.h"
 
 #define COMMAND_BUFFER_LENGTH  32
 #define RESPONSE_BUFFER_LENGTH  32
 
-typedef struct gs232_server_t
-{
-    char *name;
-    uint16_t port;
-    uint32_t led;
-} gs232_server_t;
-
-gs232_server_t az_server = { "gs232_az", AZ_SERVER_PORT, LINE_LED2 };
-gs232_server_t el_server = { "gs232_el", EL_SERVER_PORT, LINE_LED3 };
+gs232_server_t tcp_gs232_az = { "tcp_gs232_az", AZ_SERVER_PORT, LINE_LED2, false };
+gs232_server_t tcp_gs232_el = { "tcp_gs232_el", EL_SERVER_PORT, LINE_LED3, false };
 
 static void gs232_parse(char* command_buffer, uint32_t command_length, char *response_buffer, uint16_t *response_length, uint16_t response_maxlength)
 {
@@ -116,10 +93,13 @@ THD_FUNCTION(gs232_server, server_vars)
 
     while (1)
     {
+        ((gs232_server_t*)server_vars)->connected = false;
         palClearLine(((gs232_server_t*)server_vars)->led);
+
         /* Blocks here for new connection */
         err = netconn_accept(conn, &newconn);
 
+        ((gs232_server_t*)server_vars)->connected = true;
         palSetLine(((gs232_server_t*)server_vars)->led);
 
         if (err == ERR_OK)
@@ -168,6 +148,6 @@ THD_WORKING_AREA(wa_el_server, EL_SERVER_STACK_SIZE);
 
 void gs232_init(void)
 {
-    chThdCreateStatic(wa_az_server, sizeof(wa_az_server), NORMALPRIO, gs232_server, (void*)&az_server);
-    chThdCreateStatic(wa_el_server, sizeof(wa_el_server), NORMALPRIO, gs232_server, (void*)&el_server);
+    chThdCreateStatic(wa_az_server, sizeof(wa_az_server), NORMALPRIO, gs232_server, (void*)&tcp_gs232_az);
+    chThdCreateStatic(wa_el_server, sizeof(wa_el_server), NORMALPRIO, gs232_server, (void*)&tcp_gs232_el);
 }

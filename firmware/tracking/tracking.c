@@ -1,22 +1,17 @@
-#include <stdio.h>
+#include "../main.h"
 
-#include "ch.h"
-#include "hal.h"
+/* AZ - PA6 - ADC123_IN6 - using ADC1 */
+/* EL - PA3 - ADC12_IN3 - using ADC1 */
 
-#include "tracking.h"
+/* AZ CW  - PB10 */
+/* AZ CCW - PB4 */
+/* EL UP  - PA8 */
+/* EL DN  - PB5 */
 
-/* AZ - PA5 - ADC12_IN5 - using ADC1 */
-/* EL - PA6 - ADC12_IN6 - using ADC1 */
+#define TRACKING_AZ_CW(state)   if(state) { palSetPad(GPIOB, 10); } else { palClearPad(GPIOB, 10); }
+#define TRACKING_AZ_CCW(state)  if(state) { palSetPad(GPIOB,  4); } else { palClearPad(GPIOB,  4); }
 
-/* AZ X - PA8 */
-/* AZ Y - PB10 */
-/* EL X - PB4 */
-/* EL Y - PB5 */
-
-#define TRACKING_AZ_CW(state)   if(state) { palSetPad(GPIOA, 8); } else { palClearPad(GPIOA, 8); }
-#define TRACKING_AZ_CCW(state)  if(state) { palSetPad(GPIOB, 10); } else { palClearPad(GPIOB, 10); }
-
-#define TRACKING_EL_UP(state)   if(state) { palSetPad(GPIOB, 4); } else { palClearPad(GPIOB, 4); }
+#define TRACKING_EL_UP(state)   if(state) { palSetPad(GPIOA, 8); } else { palClearPad(GPIOA, 8); }
 #define TRACKING_EL_DOWN(state) if(state) { palSetPad(GPIOB, 5); } else { palClearPad(GPIOB, 5); }
 
 #define ADC_SAMPLES     16
@@ -133,9 +128,11 @@ static const ADCConversionGroup adc_az_adcgrpcfg = {
   ADC_CR2_SWSTART,          /* CR2 */
   ADC_SMPR1_SMP_AN11(ADC_SAMPLE_3),
   0,                        /* SMPR2 */
+  0,                        /* HTR */
+  0,                        /* LTR */
   ADC_SQR1_NUM_CH(1),
   0,                        /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN5) /* IN5 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN6) /* IN6 */
 };
 
 static const ADCConversionGroup adc_el_adcgrpcfg = {
@@ -147,9 +144,11 @@ static const ADCConversionGroup adc_el_adcgrpcfg = {
   ADC_CR2_SWSTART,          /* CR2 */
   ADC_SMPR1_SMP_AN11(ADC_SAMPLE_3),
   0,                        /* SMPR2 */
+  0,                        /* HTR */
+  0,                        /* LTR */
   ADC_SQR1_NUM_CH(1),
   0,                        /* SQR2 */
-  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN6) /* IN6 */
+  ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2) /* IN3 */
 };
 
 static uint16_t tracking_az_sample(void)
@@ -281,10 +280,27 @@ THD_FUNCTION(tracking, arg)
       }
     }
 
-    TRACKING_AZ_CW(tracking_state.cw);
-    TRACKING_AZ_CCW(tracking_state.ccw);
-    TRACKING_EL_UP(tracking_state.up);
-    TRACKING_EL_DOWN(tracking_state.down);
+    if(tcp_gs232_az.connected)
+    {
+      TRACKING_AZ_CW(tracking_state.cw);
+      TRACKING_AZ_CCW(tracking_state.ccw);
+    }
+    else
+    {
+      TRACKING_AZ_CW(0);
+      TRACKING_AZ_CCW(0);
+    }
+
+    if(tcp_gs232_el.connected)
+    {
+      TRACKING_EL_UP(tracking_state.up);
+      TRACKING_EL_DOWN(tracking_state.down);
+    }
+    else
+    {
+      TRACKING_EL_UP(0);
+      TRACKING_EL_DOWN(0);
+    }
 
     chThdSleepMilliseconds(50);
   }

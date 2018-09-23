@@ -1,12 +1,11 @@
-
-# Define project name here
 PROJECT = g5500-ethernet-controller
 
-SRCS = tracking/tracking.c \
-				usb/usb_shell.c \
-				usb/usbcfg.c \
-				gs232/gs232.c \
-				main.c
+PROJSRC = tracking/tracking.c \
+          usb/usb_shell.c \
+          usb/usbcfg.c \
+          gs232/gs232.c \
+          web/web.c \
+          main.c
 
 ##############################################################################
 # Build global options
@@ -15,7 +14,7 @@ SRCS = tracking/tracking.c \
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -Og -gdwarf-3 -fomit-frame-pointer -falign-functions=16 -specs=nosys.specs -specs=nano.specs
+  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -specs=nosys.specs -specs=nano.specs
 endif
 
 # C specific options here (added to USE_OPT).
@@ -85,31 +84,36 @@ ifeq ($(USE_FPU),)
 endif
 
 # FPU-related options.
-ifeq ($(USE_FPU_OPT),)
+#ifeq ($(USE_FPU_OPT),)
 #  USE_FPU_OPT = -mfloat-abi=$(USE_FPU) -mfpu=fpv5-sp-d16
-endif
+#endif
 
 #
 # Architecture or project specific options
 ##############################################################################
 
 ##############################################################################
-# Project, sources and paths
-#
 
 # Imported source files and paths
 CHIBIOS = ChibiOS
+CONFDIR  := ./cfg
+
+# Licensing files.
+include $(CHIBIOS)/os/license/license.mk
 # Startup files.
 include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
 # HAL-OSAL files (optional).
 include $(CHIBIOS)/os/hal/hal.mk
 include $(CHIBIOS)/os/hal/ports/STM32/STM32F4xx/platform.mk
-include ./boards/ST_NUCLEO144_F429ZI/board.mk
+include $(CONFDIR)/boards/G5500_v2018.3/board.mk
 include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 # RTOS files (optional).
 include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 # Other files (optional).
+#include $(CHIBIOS)/test/lib/test.mk
+#include $(CHIBIOS)/test/rt/rt_test.mk
+#include $(CHIBIOS)/test/oslib/oslib_test.mk
 include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/shell/shell.mk
 include $(CHIBIOS)/os/various/lwip_bindings/lwip.mk
@@ -119,22 +123,14 @@ LDSCRIPT= $(STARTUPLD)/STM32F429xI.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(STARTUPSRC) \
-       $(KERNSRC) \
-       $(PORTSRC) \
-       $(OSALSRC) \
-       $(HALSRC) \
-       $(PLATFORMSRC) \
-       $(BOARDSRC) \
-       $(LWSRC) \
-       $(STREAMSSRC) \
-       $(SHELLSRC) \
+CSRC = $(ALLCSRC) \
+       $(TESTSRC) \
        $(CHIBIOS)/os/various/evtimer.c \
-       $(SRCS)
+       $(PROJSRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC =
+CPPSRC = $(ALLCPPSRC)
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -157,14 +153,10 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC =
-ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
+ASMSRC = $(ALLASMSRC)
+ASMXSRC = $(ALLXASMSRC)
 
-INCDIR = $(CHIBIOS)/os/license \
-         $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
-         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
-         $(STREAMSINC) $(SHELLINC) $(LWINC) $(FATFSINC) \
-         $(CHIBIOS)/os/various
+INCDIR = $(ALLINC) $(TESTINC) $(CONFDIR)
 
 #
 # Project, sources and paths
