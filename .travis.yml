@@ -5,7 +5,7 @@ language: c
 
 # 7z required for ChibiOS ext packages (lwip, ..)
 before_install:
-  - sudo apt-get install -y p7zip
+  - sudo apt-get install -y p7zip-full
 
 # Only grab latest git commit (no need for history)
 git:
