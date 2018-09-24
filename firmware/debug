@@ -16,20 +16,19 @@ locate_black_magic() {
   fi
   return 1
 }
-
-flash_target() {
-	$flashtool -q --batch \
-  -ex 'file '$binary                          \
-  -ex 'target extended-remote '$programmer    \
-  -ex 'monitor swdp_scan'                     \
-  -ex 'attach 1'                              \
-  -ex 'load '$binary                          \
-  -ex 'compare-sections';
+debug_target() {
+	$flashtool -q \
+    -ex 'file '$binary                          \
+    -ex 'target extended-remote '$programmer    \
+    -ex 'monitor tpwr $programmer_power'        \
+    -ex 'monitor swdp_scan'                     \
+    -ex 'attach 1'                              \
+    -ex 'set mem inaccessible-by-default off'   \
+    -ex 'load '$binary                          \
+    -ex 'compare-sections'
 }
 
 if programmer="`locate_black_magic`";
 then
-	flash_target
-else
-	st-flash write $binary 0x8000000
+	debug_target;
 fi

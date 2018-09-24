@@ -1,9 +1,107 @@
+/*
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+*/
+
+/*
+ * This file is a modified version of the lwIP web server demo. The original
+ * author is unknown because the file didn't contain any license information.
+ */
+
+/**
+ * @file web.c
+ * @brief HTTP server wrapper thread code.
+ * @addtogroup WEB_THREAD
+ * @{
+ */
+
 #include "../main.h"
 
 #if LWIP_NETCONN
 
-static const char http_html_hdr[] = "HTTP/1.1 200 OK\r\nContent-type: text/html\r\n\r\n";
-static const char http_index_html[] = "<html><head><title>Congrats!</title></head><body><h1>Welcome to our lwIP HTTP server!</h1><p>This is a small test page.</body></html>";
+static char url_buffer[WEB_MAX_PATH_SIZE];
+/**
+ * @brief   Decodes an URL sting.
+ * @note    The string is terminated by a zero or a separator.
+ *
+ * @param[in] url       encoded URL string
+ * @param[out] buf      buffer for the processed string
+ * @param[in] max       max number of chars to copy into the buffer
+ * @return              The conversion status.
+ * @retval false        string converted.
+ * @retval true         the string was not valid or the buffer overflowed
+ *
+ * @notapi
+ */
+#define HEXTOI(x) (isdigit(x) ? (x) - '0' : (x) - 'a' + 10)
+static bool decode_url(const char *url, char *buf, size_t max) {
+
+  while (true) {
+    int h, l;
+    unsigned c = *url++;
+
+    switch (c) {
+    case 0:
+    case '\r':
+    case '\n':
+    case '\t':
+    case ' ':
+    case '?':
+      *buf = 0;
+      return false;
+    case '.':
+      if (max <= 1)
+        return true;
+
+      h = *(url + 1);
+      if (h == '.')
+        return true;
+
+      break;
+    case '%':
+      if (max <= 1)
+        return true;
+
+      h = tolower((int)*url++);
+      if (h == 0)
+        return true;
+      if (!isxdigit(h))
+        return true;
+
+      l = tolower((int)*url++);
+      if (l == 0)
+        return true;
+      if (!isxdigit(l))
+        return true;
+
+      c = (char)((HEXTOI(h) << 4) | HEXTOI(l));
+      break;
+    default:
+      if (max <= 1)
+        return true;
+
+      if (!isalnum(c) && (c != '_') && (c != '-') && (c != '+') &&
+          (c != '/'))
+        return true;
+
+      break;
+    }
+
+    *buf++ = c;
+    max--;
+  }
+}
 
 static void http_server_serve(struct netconn *conn) {
   struct netbuf *inbuf;
@@ -27,14 +125,27 @@ static void http_server_serve(struct netconn *conn) {
         buf[3]==' ' &&
         buf[4]=='/' ) {
 
-      /* Send the HTML header
-             * subtract 1 from the size, since we dont send the \0 in the string
-             * NETCONN_NOCOPY: our data is const static, so no need to copy it
-       */
-      netconn_write(conn, http_html_hdr, sizeof(http_html_hdr)-1, NETCONN_NOCOPY);
+      if (decode_url(buf + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
+        /* Invalid URL handling.*/
+        return;
+      }
 
-      /* Send our HTML page */
-      netconn_write(conn, http_index_html, sizeof(http_index_html)-1, NETCONN_NOCOPY);
+      web_paths(conn, url_buffer);
+    }
+    else if(buflen>=6 &&
+        buf[0]=='P' &&
+        buf[1]=='O' &&
+        buf[2]=='S' &&
+        buf[3]=='T' &&
+        buf[4]==' ' &&
+        buf[5]=='/' ) {
+
+      if (decode_url(buf + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
+        /* Invalid URL handling.*/
+        return;
+      }
+
+      web_paths(conn, url_buffer);
     }
   }
   /* Close the connection (server closes in HTTP) */

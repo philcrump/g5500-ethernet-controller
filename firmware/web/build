@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+source_dir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+cd $source_dir
+
+echo "Clearing dist/ .."
+rm -fr dist/
+cp -r src/ dist/
+
+echo "Compressing files.."
+for file in $(find dist/ -type f)
+do
+	gzip -9 $file
+done
+
+echo "Packing headers.."
+for file in $(find dist/ -type f -name *.gz)
+do
+	file_path=${file%/*}
+	file_basename=$(basename $file)
+	file_headername=${file_basename//./_}.h
+	pushd $file_path > /dev/null
+	  xxd -i $file_basename > "${file_headername}"
+	  rm $file_basename
+	popd > /dev/null
+	echo "> ${file_path}/${file_headername}"
+done

@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+
+source_dir="$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)"
+cd "${source_dir}"
+
+COLOUR_GREEN='\033[0;32m'
+COLOUR_YELLOW='\033[1;33m'
+COLOUR_PURPLE='\033[0;35m'
+COLOUR_RED='\033[0;31m'
+COLOUR_OFF='\033[0;00m'
+CLEAR_LINE='\033[2K'
+
+_ERROR_="$COLOUR_RED[ERROR]$COLOUR_OFF"
+_INFO_="$COLOUR_PURPLE[INFO]$COLOUR_OFF"
+_DEBUG_="$COLOUR_YELLOW[DEBUG]$COLOUR_OFF"
+
+opt_flash=false
+opt_debug=false
+
+CHIBIOS_SRC="${source_dir}/ChibiOS"
+LWIP_SRC="${CHIBIOS_SRC}/ext/lwip"
+WOLFSSL_SRC="${CHIBIOS_SRC}/ext/wolfssl"
+
+unpack_lwip () {
+  if [ ! -d "${LWIP_SRC}" ]; then
+    echo "LWIP Directory not found, unpacking..";
+    cd "${CHIBIOS_SRC}/ext/";
+    7z x lwip-*.7z;
+    if [ ! -d "${LWIP_SRC}" ]; then
+      echo "Unpacking LWIP failed! Exiting..";
+      exit 1;
+    fi
+    cd "${source_dir}";
+  fi
+}
+
+unpack_wolfssl () {
+  if [ ! -d "${WOLFSSL_SRC}" ]; then
+    echo "WolfSSL Directory not found, unpacking..";
+    cd "${CHIBIOS_SRC}/ext/";
+    7z x wolfssl-*.7z;
+    if [ ! -d "${LWIP_SRC}" ]; then
+      echo "Unpacking WolfSSL failed! Exiting..";
+      exit 1;
+    fi
+    cd "${source_dir}";
+  fi
+}
+
+patch_lwip_time() {
+  patch -p1 -d ${CHIBIOS_SRC} -N --dry-run --silent < lwip-use-system-time.patch > /dev/null;
+  if [ $? -eq 0 ];
+  then
+    patch -p1 -d ${CHIBIOS_SRC} -N < lwip-use-system-time.patch;
+  fi
+}
+
+patch_lwip_dhcpretry_3s() {
+  patch -p1 -d ${CHIBIOS_SRC} -N --binary --dry-run --silent < lwip-dhcpretry-3s.patch > /dev/null;
+  if [ $? -eq 0 ];
+  then
+    patch -p1 -d ${CHIBIOS_SRC} -N --binary < lwip-dhcpretry-3s.patch;
+  fi
+}
+
+hyphenjoin() {
+  str=""
+  while [ $# -gt 0 ]
+  do
+    str="$str$1-"
+    shift
+  done
+  if [ ! -z "$str" ]
+  then
+    str="${str::-1}"
+  fi
+  echo "$str"
+}
+
+githash() {
+  githash="$(git describe --dirty --always)"
+  # Mark as dirty if untracked files exist
+  if [ -z "$(echo "$githash" | grep "dirty")" ] && [ ! -z "$(git status --porcelain | grep "^??")" ]; then
+    githash="$githash-dirty"
+  fi
+  echo $githash
+}
+
+size_binary() {
+  size=`arm-none-eabi-size -A -d $1`;
+
+  size_text=`echo "$size" | grep '\.text' | grep -o -E '[0-9]+' | sed -n 1p`;
+  size_rodata=`echo "$size" | grep '\.rodata' | grep -o -E '[0-9]+' | sed -n 1p`;
+  size_data=`echo "$size" | grep '\.data' | grep -o -E '[0-9]+' | sed -n 1p`;
+  size_bss=`echo "$size" | grep '\.bss' | grep -o -E '[0-9]+' | sed -n 1p`;
+  size_heap=`echo "$size" | grep '\.heap' | grep -o -E '[0-9]+' | sed -n 1p`;
+
+  size_flash=$(($size_text+$size_data+$size_rodata));
+  size_static=$(($size_data+$size_bss));
+  size_ram=$(($size_static+$size_heap));
+  size_fdata=$(($size_data+$size_rodata));
+
+  printf "==== Resources ====\n";
+  printf "RAM:       %   6s B\n" ${size_ram};
+  printf " - Static: %   6s B\n" ${size_static};
+  printf " - Heap:   %   6s B\n" ${size_heap};
+  printf "Flash:     %   6s B\n" ${size_flash};
+  printf " - Code:   %   6s B\n" ${size_text};
+  printf " - Data:   %   6s B\n" ${size_fdata};
+}
+
+## Read Flags
+OPTIND=1
+while getopts ":DF" opt; do
+  case "$opt" in
+    D) # Debug
+      opt_debug=true
+      ;;
+    F) # Flash
+      opt_flash=true
+      ;;
+    ?) # Illegal Option
+      echo -e "$_ERROR_ Illegal option '$OPTARG'"
+      exit 3
+      ;;
+  esac
+done
+for i in `seq 2 $OPTIND`; do shift; done
+
+
+unpack_lwip
+unpack_wolfssl
+
+#patch_lwip_time
+patch_lwip_dhcpretry_3s
+
+web/build
+
+#filename="$(hyphenjoin $board $program $flags `githash`)"
+
+flags="FILE=\"${filename}\""
+
+make ${flags} \
+&& {
+  #printf "$_INFO_$COLOUR_GREEN Built: ${outdir}/${filename}$COLOUR_OFF\n"
+  size_binary "builds/g5500-ethernet-controller.elf"
+  if $opt_debug;
+  then
+    ./debug;
+  elif $opt_flash;
+  then
+    ./flash;
+  fi
+}

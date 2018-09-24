@@ -1,0 +1,6 @@
+--- a/ext/lwip/src/include/lwip/dhcp.h	2018-02-10 14:53:51.695608063 +0000
++++ b/ext/lwip/src/include/lwip/dhcp.h	2018-02-10 14:54:27.295673882 +0000
+@@ -52,2 +52,2 @@
+ /** period (in seconds) of the application calling dhcp_coarse_tmr() */
+-#define DHCP_COARSE_TIMER_SECS  60
++#define DHCP_COARSE_TIMER_SECS  3

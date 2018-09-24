@@ -2,6 +2,7 @@
 #define __MAIN_H__
 
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 
 #include "ch.h"
@@ -22,6 +23,7 @@
 #include "tracking/tracking.h"
 #include "usb/usb_shell.h"
 #include "web/web.h"
+#include "web/web_paths.h"
 
 typedef struct device_status_t {
 	bool lan_up;

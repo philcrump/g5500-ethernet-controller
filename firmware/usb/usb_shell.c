@@ -1,6 +1,9 @@
 #include "../main.h"
 #include "usb/usbcfg.h"
 
+#include "lwip/dhcp.h"
+#include "lwip/prot/dhcp.h"
+
 /**** USB SHELL ****/
 bool network_dynamic = true;
 
@@ -108,6 +111,49 @@ static void cmd_ip(BaseSequentialStream *chp, int argc, char *argv[])
         (netif_default->ip_addr.addr >> 8) & 0xFF,
         (netif_default->ip_addr.addr >> 16) & 0xFF,
         (netif_default->ip_addr.addr >> 24) & 0xFF);
+    struct dhcp *dhcps;
+    dhcps = netif_dhcp_data(netif_default);
+    switch(dhcps->state)
+    {
+      case DHCP_STATE_OFF:
+        chprintf(chp, "DHCP: OFF\r\n");
+        break;
+      case DHCP_STATE_REQUESTING:
+        chprintf(chp, "DHCP: Requesting\r\n");
+        break;
+      case DHCP_STATE_INIT:
+        chprintf(chp, "DHCP: Init\r\n");
+        break;
+      case DHCP_STATE_REBOOTING:
+        chprintf(chp, "DHCP: Rebooting\r\n");
+        break;
+      case DHCP_STATE_REBINDING:
+        chprintf(chp, "DHCP: Rebinding\r\n");
+        break;
+      case DHCP_STATE_RENEWING:
+        chprintf(chp, "DHCP: Renewing\r\n");
+        break;
+      case DHCP_STATE_SELECTING:
+        chprintf(chp, "DHCP: Selecting\r\n");
+        break;
+      case DHCP_STATE_INFORMING:
+        chprintf(chp, "DHCP: Informing\r\n");
+        break;
+      case DHCP_STATE_CHECKING:
+        chprintf(chp, "DHCP: Checking\r\n");
+        break;
+      case DHCP_STATE_BOUND:
+        chprintf(chp, "DHCP: Bound\r\n");
+        break;
+
+      case DHCP_STATE_BACKING_OFF:
+        chprintf(chp, "DHCP: Backing off\r\n");
+        break;
+
+      default:
+        chprintf(chp, "DHCP: Unknown\r\n");
+        break;
+    }
   }
   else if (argc == 1)
   {

@@ -5,7 +5,11 @@ PROJSRC = tracking/tracking.c \
           usb/usbcfg.c \
           gs232/gs232.c \
           web/web.c \
+          web/web_paths.c \
           main.c
+
+BUILDDIR = builds
+DEPDIR = $(BUILDDIR)/deps
 
 ##############################################################################
 # Build global options
@@ -14,7 +18,7 @@ PROJSRC = tracking/tracking.c \
 
 # Compiler options here.
 ifeq ($(USE_OPT),)
-  USE_OPT = -O2 -ggdb -fomit-frame-pointer -falign-functions=16 -specs=nosys.specs -specs=nano.specs
+  USE_OPT = -Os -ggdb -fomit-frame-pointer -falign-functions=16 -specs=nosys.specs -specs=nano.specs
 endif
 
 # C specific options here (added to USE_OPT).
@@ -80,7 +84,7 @@ endif
 
 # Enables the use of FPU (no, softfp, hard).
 ifeq ($(USE_FPU),)
-  USE_FPU = no
+  USE_FPU = hard
 endif
 
 # FPU-related options.
@@ -192,10 +196,10 @@ AOPT =
 TOPT = -mthumb -DTHUMB
 
 # Define C warning options here
-CWARN = -Wall -Wextra -Wundef -Wstrict-prototypes
+CWARN = -Wall -Wextra -Werror -Wundef -Wstrict-prototypes
 
 # Define C++ warning options here
-CPPWARN = -Wall -Wextra -Wundef
+CPPWARN = -Wall -Wextra -Werror -Wundef
 
 #
 # Compiler settings

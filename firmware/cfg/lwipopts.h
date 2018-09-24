@@ -1142,7 +1142,7 @@
  * whenever the link changes (i.e., link down)
  */
 #ifndef LWIP_NETIF_LINK_CALLBACK
-#define LWIP_NETIF_LINK_CALLBACK        1
+#define LWIP_NETIF_LINK_CALLBACK        0
 #endif
 
 /**
