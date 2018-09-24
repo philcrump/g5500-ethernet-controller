@@ -3,6 +3,10 @@
 # Use barebones Travis image
 language: c
 
+# 7z required for ChibiOS ext packages (lwip, ..)
+before_install:
+  - sudo apt-get install -y p7zip
+
 # Only grab latest git commit (no need for history)
 git:
   depth: 1
