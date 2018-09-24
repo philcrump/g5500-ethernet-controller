@@ -10,9 +10,9 @@ COLOUR_RED='\033[0;31m'
 COLOUR_OFF='\033[0;00m'
 CLEAR_LINE='\033[2K'
 
-_ERROR_="$COLOUR_RED[ERROR]$COLOUR_OFF"
-_INFO_="$COLOUR_PURPLE[INFO]$COLOUR_OFF"
-_DEBUG_="$COLOUR_YELLOW[DEBUG]$COLOUR_OFF"
+_ERROR_="${COLOUR_RED}[ERROR]${COLOUR_OFF}"
+_INFO_="${COLOUR_PURPLE}[INFO]${COLOUR_OFF}"
+_DEBUG_="${COLOUR_YELLOW}[DEBUG]${COLOUR_OFF}"
 
 opt_flash=false
 opt_debug=false
@@ -23,35 +23,29 @@ WOLFSSL_SRC="${CHIBIOS_SRC}/ext/wolfssl"
 
 unpack_lwip () {
   if [ ! -d "${LWIP_SRC}" ]; then
-    echo "LWIP Directory not found, unpacking..";
+    printf "$_INFO_ Unpacking LwIP.. ";
     cd "${CHIBIOS_SRC}/ext/";
-    7z x lwip-*.7z;
+    7z x lwip-*.7z > /dev/null;
     if [ ! -d "${LWIP_SRC}" ]; then
-      echo "Unpacking LWIP failed! Exiting..";
+      printf "${COLOUR_RED}FAILED${COLOUR_OFF}\n";
       exit 1;
     fi
+    printf "${COLOUR_GREEN}OK${COLOUR_OFF}\n";
     cd "${source_dir}";
   fi
 }
 
 unpack_wolfssl () {
   if [ ! -d "${WOLFSSL_SRC}" ]; then
-    echo "WolfSSL Directory not found, unpacking..";
+    printf "$_INFO_ Unpacking wolfSSL.. ";
     cd "${CHIBIOS_SRC}/ext/";
-    7z x wolfssl-*.7z;
+    7z x wolfssl-*.7z > /dev/null;
     if [ ! -d "${LWIP_SRC}" ]; then
-      echo "Unpacking WolfSSL failed! Exiting..";
+      printf "${COLOUR_RED}FAILED${COLOUR_OFF}\n";
       exit 1;
     fi
+    printf "${COLOUR_GREEN}OK${COLOUR_OFF}\n";
     cd "${source_dir}";
-  fi
-}
-
-patch_lwip_time() {
-  patch -p1 -d ${CHIBIOS_SRC} -N --dry-run --silent < lwip-use-system-time.patch > /dev/null;
-  if [ $? -eq 0 ];
-  then
-    patch -p1 -d ${CHIBIOS_SRC} -N < lwip-use-system-time.patch;
   fi
 }
 
@@ -59,7 +53,15 @@ patch_lwip_dhcpretry_3s() {
   patch -p1 -d ${CHIBIOS_SRC} -N --binary --dry-run --silent < lwip-dhcpretry-3s.patch > /dev/null;
   if [ $? -eq 0 ];
   then
-    patch -p1 -d ${CHIBIOS_SRC} -N --binary < lwip-dhcpretry-3s.patch;
+    printf "$_INFO_ Patching LwIP.. ";
+    patch -p1 -d ${CHIBIOS_SRC} -N --binary --silent < lwip-dhcpretry-3s.patch;
+    if [ $? -eq 0 ];
+    then
+      printf "${COLOUR_GREEN}OK${COLOUR_OFF}\n";
+    else
+      printf "${COLOUR_RED}FAILED${COLOUR_OFF}\n";
+      exit 1;
+    fi
   fi
 }
 
@@ -100,13 +102,13 @@ size_binary() {
   size_ram=$(($size_static+$size_heap));
   size_fdata=$(($size_data+$size_rodata));
 
-  printf "==== Resources ====\n";
-  printf "RAM:       %   6s B\n" ${size_ram};
-  printf " - Static: %   6s B\n" ${size_static};
-  printf " - Heap:   %   6s B\n" ${size_heap};
-  printf "Flash:     %   6s B\n" ${size_flash};
-  printf " - Code:   %   6s B\n" ${size_text};
-  printf " - Data:   %   6s B\n" ${size_fdata};
+  printf "$_INFO_ Device Resources\n";
+  printf "  RAM:       %   6s B\n" ${size_ram};
+  printf "   - Static: %   6s B\n" ${size_static};
+  printf "   - Heap:   %   6s B\n" ${size_heap};
+  printf "  Flash:     %   6s B\n" ${size_flash};
+  printf "   - Code:   %   6s B\n" ${size_text};
+  printf "   - Data:   %   6s B\n" ${size_fdata};
 }
 
 ## Read Flags
@@ -127,28 +129,27 @@ while getopts ":DF" opt; do
 done
 for i in `seq 2 $OPTIND`; do shift; done
 
-
 unpack_lwip
 unpack_wolfssl
 
-#patch_lwip_time
 patch_lwip_dhcpretry_3s
 
 web/build
 
-#filename="$(hyphenjoin $board $program $flags `githash`)"
+filename="$(hyphenjoin "g5500" `githash`)"
 
-flags="FILE=\"${filename}\""
+flags="TARGET_FILENAME=\"${filename}\""
 
+printf "$_INFO_ Compiling..\n";
 make ${flags} \
 && {
-  #printf "$_INFO_$COLOUR_GREEN Built: ${outdir}/${filename}$COLOUR_OFF\n"
-  size_binary "builds/g5500-ethernet-controller.elf"
+  printf "$_INFO_$COLOUR_GREEN Compile OK$COLOUR_OFF\n"
+  size_binary "builds/${filename}.elf"
   if $opt_debug;
   then
-    ./debug;
+    ./debug "builds/${filename}";
   elif $opt_flash;
   then
-    ./flash;
+    ./flash "builds/${filename}";
   fi
 }

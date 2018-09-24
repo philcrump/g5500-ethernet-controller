@@ -1,8 +1,5 @@
-setInterval(function()
-{
-    update_status();
-},
-500);
+
+update_status();
 
 function update_status()
 {
@@ -19,10 +16,14 @@ function update_status()
             document.getElementById("tracking-ccw-span").textContent = data.ccw;
             document.getElementById("tracking-az-deg-desired-span").textContent = (data.desired_az_ddeg / 10);
             document.getElementById("tracking-el-deg-desired-span").textContent = (data.desired_el_ddeg / 10);
+
+            setTimeout(update_status, 500);
         },
         function(error_status)
         {
             document.getElementById("tracking-az-raw-span").textContent = "Error in request";
+
+            setTimeout(update_status, 500);
         }
     );
 }

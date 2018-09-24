@@ -1,4 +1,4 @@
-PROJECT = g5500-ethernet-controller
+PROJECT = $(TARGET_FILENAME)
 
 PROJSRC = tracking/tracking.c \
           usb/usb_shell.c \
