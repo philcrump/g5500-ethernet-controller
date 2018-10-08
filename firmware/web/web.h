@@ -40,6 +40,10 @@
 #define WEB_MAX_PATH_SIZE       128
 #endif
 
+#ifndef WEB_MAX_POSTBODY_SIZE
+#define WEB_MAX_POSTBODY_SIZE   128
+#endif
+
 extern THD_WORKING_AREA(wa_http_server, WEB_THREAD_STACK_SIZE);
 
 #ifdef __cplusplus

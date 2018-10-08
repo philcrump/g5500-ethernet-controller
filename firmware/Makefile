@@ -210,7 +210,7 @@ CPPWARN = -Wall -Wextra -Werror -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS =
+UDEFS = $(subst _, -D,$(BUILD_DEFINES))
 
 # Define ASM defines here
 UADEFS =

@@ -53,5 +53,7 @@ if programmer="`locate_black_magic`";
 then
 	flash_target
 else
+	binary=builds/"$(basename "$binary" .elf).bin"
+	echo -e "$_INFO_ Using bin file with st-flash: ${binary}"
 	st-flash write $binary 0x8000000
 fi

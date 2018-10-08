@@ -129,8 +129,26 @@ while getopts ":DF" opt; do
 done
 for i in `seq 2 $OPTIND`; do shift; done
 
+## Read define arguments
+defines=""
+
+_in_define="${1}"
+while [ ! -z "$_in_define" ];
+do
+  defines="${defines}_${_in_define}"
+  shift
+  _in_define="${1}"
+done
+
+if [ ! -z "$defines" ];
+then
+  printf "$_INFO_ Defines:${defines}\n"
+fi
+
+## Prepare ChibiOS Dependencies
+
 unpack_lwip
-unpack_wolfssl
+#unpack_wolfssl
 
 patch_lwip_dhcpretry_3s
 
@@ -138,7 +156,7 @@ web/build
 
 filename="$(hyphenjoin "g5500" `githash`)"
 
-flags="TARGET_FILENAME=\"${filename}\""
+flags="TARGET_FILENAME=\"${filename}\" BUILD_DEFINES=${defines}"
 
 printf "$_INFO_ Compiling..\n";
 make ${flags} \

@@ -31,7 +31,7 @@ static void web_path_api_status(struct netconn *conn);
 //static const char http_binary_hdr[] = "HTTP/1.0 200 OK\r\nContent-Type:application/octet-stream\r\n\r\n";
 //static const char http_binary_gz_hdr[] = "HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Type:application/octet-stream\r\n\r\n";
 
-void web_paths(struct netconn *conn, char *url_buffer)
+void web_paths_get(struct netconn *conn, char *url_buffer)
 {
   if(strcmp("/",url_buffer) == 0 || strcmp("/index.html",url_buffer) == 0)
   {
@@ -78,27 +78,126 @@ static void web_path_api_status(struct netconn *conn)
   n = snprintf(http_response, 4096,
     "{"
       "\"az_raw\":%d,"
-      "\"el_raw\":%d,"
       "\"az_ddeg\":%d,"
+      "\"cw\":%d,"
+      "\"ccw\":%d,"
+      "\"desired_az_ddeg\":%d"
+#ifdef ELEVATION_ENABLED
+      ",\"el_raw\":%d,"
       "\"el_ddeg\":%d,"
       "\"up\":%d,"
       "\"down\":%d,"
-      "\"cw\":%d,"
-      "\"ccw\":%d,"
-      "\"desired_az_ddeg\":%d,"
       "\"desired_el_ddeg\":%d"
+#endif
     "}",
     tracking_state.az_raw,
-    tracking_state.el_raw,
     tracking_state.az_ddeg,
+    tracking_state.cw,
+    tracking_state.ccw,
+    tracking_state.desired_az_ddeg
+#ifdef ELEVATION_ENABLED
+    ,tracking_state.el_raw,
     tracking_state.el_ddeg,
     tracking_state.up,
     tracking_state.down,
-    tracking_state.cw,
-    tracking_state.ccw,
-    tracking_state.desired_az_ddeg,
     tracking_state.desired_el_ddeg
+#endif
   );
 
   netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+}
+
+#ifndef WEBPASSWORD
+ #error "Must define WEBPASSWORD"
+ #define WEBPASSWORD  ""
+#endif
+
+static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
+{
+  int n;
+  char *bearing_ptr;
+  char *password_ptr;
+  int desired_bearing;
+
+  netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+
+  /*** Check Password ***/
+
+  password_ptr = strstr(postbody_buffer, "password=");
+  if(password_ptr == NULL)
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Failed to parse request (password not found)\""
+      "}"
+    );
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  if(0 != strncmp(password_ptr + strlen("password="), WEBPASSWORD, strlen(WEBPASSWORD)))
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Incorrect password!\""
+      "}"
+    );
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  /*** Check bearing ***/
+
+  bearing_ptr = strstr(postbody_buffer, "bearing=");
+  if(bearing_ptr == NULL)
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Failed to parse request (bearing not found)\""
+      "}"
+    );
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  desired_bearing = strtol(bearing_ptr + strlen("bearing="), NULL, 10);
+
+  if(desired_bearing < 0 || desired_bearing > 360)
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Bearing out of range\","
+        "\"new_bearing\":%d"
+      "}"
+      , desired_bearing
+    );
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  /*** Success! Set bearing ***/
+
+  tracking_state.desired_az_deg = desired_bearing;
+  tracking_state.desired_az_ddeg = tracking_state.desired_az_deg * 10;
+  
+  n = snprintf(http_response, 4096,
+    "{"
+      "\"new_bearing\":%d"
+    "}",
+    tracking_state.desired_az_deg
+  );
+
+  netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+}
+
+void web_paths_post(struct netconn *conn, char *url_buffer, char *postbody_buffer)
+{
+  if(strcmp("/new_bearing",url_buffer) == 0)
+  {
+    web_path_new_bearing(conn, postbody_buffer);
+  }
+  else
+  {
+    web_path_404(conn);
+  }
 }

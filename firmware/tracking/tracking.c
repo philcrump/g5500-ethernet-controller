@@ -11,8 +11,13 @@
 #define TRACKING_AZ_CW(state)   if(state) { palSetPad(GPIOB, 10); } else { palClearPad(GPIOB, 10); }
 #define TRACKING_AZ_CCW(state)  if(state) { palSetPad(GPIOB,  4); } else { palClearPad(GPIOB,  4); }
 
-#define TRACKING_EL_UP(state)   if(state) { palSetPad(GPIOA, 8); } else { palClearPad(GPIOA, 8); }
-#define TRACKING_EL_DOWN(state) if(state) { palSetPad(GPIOB, 5); } else { palClearPad(GPIOB, 5); }
+#ifdef ELEVATION_ENABLED
+  #define TRACKING_EL_UP(state)   if(state) { palSetPad(GPIOA, 8); } else { palClearPad(GPIOA, 8); }
+  #define TRACKING_EL_DOWN(state) if(state) { palSetPad(GPIOB, 5); } else { palClearPad(GPIOB, 5); }
+#else
+  #define TRACKING_EL_UP(state)   
+  #define TRACKING_EL_DOWN(state) 
+#endif
 
 #define ADC_SAMPLES     16
 static adcsample_t adc_samples[ADC_SAMPLES];
@@ -280,27 +285,16 @@ THD_FUNCTION(tracking, arg)
       }
     }
 
-    if(tcp_gs232_az.connected)
-    {
-      TRACKING_AZ_CW(tracking_state.cw);
-      TRACKING_AZ_CCW(tracking_state.ccw);
-    }
-    else
-    {
-      TRACKING_AZ_CW(0);
-      TRACKING_AZ_CCW(0);
-    }
+    TRACKING_AZ_CW(tracking_state.cw);
+    TRACKING_AZ_CCW(tracking_state.ccw);
 
-    if(tcp_gs232_el.connected)
-    {
+    #ifdef ELEVATION_ENABLED
       TRACKING_EL_UP(tracking_state.up);
       TRACKING_EL_DOWN(tracking_state.down);
-    }
-    else
-    {
+    #else
       TRACKING_EL_UP(0);
       TRACKING_EL_DOWN(0);
-    }
+    #endif
 
     chThdSleepMilliseconds(50);
   }

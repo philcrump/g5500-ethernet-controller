@@ -31,6 +31,7 @@
 #if LWIP_NETCONN
 
 static char url_buffer[WEB_MAX_PATH_SIZE];
+static char postbody_buffer[WEB_MAX_POSTBODY_SIZE];
 /**
  * @brief   Decodes an URL sting.
  * @note    The string is terminated by a zero or a separator.
@@ -45,11 +46,11 @@ static char url_buffer[WEB_MAX_PATH_SIZE];
  * @notapi
  */
 #define HEXTOI(x) (isdigit(x) ? (x) - '0' : (x) - 'a' + 10)
-static bool decode_url(const char *url, char *buf, size_t max) {
-
+static bool decode_url(const char *url, char *buf, size_t max)
+{
   while (true) {
     int h, l;
-    unsigned c = *url++;
+    unsigned char c = *url++;
 
     switch (c) {
     case 0:
@@ -59,41 +60,41 @@ static bool decode_url(const char *url, char *buf, size_t max) {
     case ' ':
     case '?':
       *buf = 0;
-      return false;
+      return true;
     case '.':
       if (max <= 1)
-        return true;
+        return false;
 
       h = *(url + 1);
       if (h == '.')
-        return true;
+        return false;
 
       break;
     case '%':
       if (max <= 1)
-        return true;
+        return false;
 
       h = tolower((int)*url++);
       if (h == 0)
-        return true;
+        return false;
       if (!isxdigit(h))
-        return true;
+        return false;
 
       l = tolower((int)*url++);
       if (l == 0)
-        return true;
+        return false;
       if (!isxdigit(l))
-        return true;
+        return false;
 
       c = (char)((HEXTOI(h) << 4) | HEXTOI(l));
       break;
     default:
       if (max <= 1)
-        return true;
+        return false;
 
       if (!isalnum(c) && (c != '_') && (c != '-') && (c != '+') &&
           (c != '/'))
-        return true;
+        return false;
 
       break;
     }
@@ -101,6 +102,37 @@ static bool decode_url(const char *url, char *buf, size_t max) {
     *buf++ = c;
     max--;
   }
+}
+
+
+static bool decode_body(const char *buf, uint16_t buflen, char *outbuf, size_t max)
+{
+  uint16_t i, j;
+
+  // Sanity-check length
+  if(buflen < 4)
+  {
+    return false;
+  }
+
+  i = 4;
+
+  while(i < buflen)
+  {
+    if(buf[i-1] == '\n' && buf[i-2] == '\r' && buf[i-3] == '\n' && buf[i-4] == '\r')
+    {
+      j = 0;
+      while((i + j) < buflen && j < (max-1) && buf[i+j] != '\0')
+      {
+        outbuf[j] = buf[i+j];
+        j++;
+      }
+      outbuf[j] = '\0';
+      return true;
+    }
+    i++;
+  }
+  return false;
 }
 
 static void http_server_serve(struct netconn *conn) {
@@ -125,12 +157,12 @@ static void http_server_serve(struct netconn *conn) {
         buf[3]==' ' &&
         buf[4]=='/' ) {
 
-      if (decode_url(buf + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
+      if (!decode_url(buf + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
         /* Invalid URL handling.*/
         return;
       }
 
-      web_paths(conn, url_buffer);
+      web_paths_get(conn, url_buffer);
     }
     else if(buflen>=6 &&
         buf[0]=='P' &&
@@ -140,12 +172,19 @@ static void http_server_serve(struct netconn *conn) {
         buf[4]==' ' &&
         buf[5]=='/' ) {
 
-      if (decode_url(buf + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
+      if (!decode_url(buf + 5, url_buffer, WEB_MAX_PATH_SIZE))
+      {
         /* Invalid URL handling.*/
         return;
       }
 
-      web_paths(conn, url_buffer);
+      if (!decode_body(buf, buflen, postbody_buffer, WEB_MAX_POSTBODY_SIZE))
+      {
+
+        return;
+      }
+
+      web_paths_post(conn, url_buffer, postbody_buffer);
     }
   }
   /* Close the connection (server closes in HTTP) */

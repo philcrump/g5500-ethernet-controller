@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "ch.h"
 #include "hal.h"
@@ -24,6 +25,8 @@
 #include "usb/usb_shell.h"
 #include "web/web.h"
 #include "web/web_paths.h"
+
+//#define ELEVATION_ENABLED
 
 typedef struct device_status_t {
 	bool lan_up;
