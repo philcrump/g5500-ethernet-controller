@@ -44,7 +44,8 @@ function update_status()
         },
         function(error_status)
         {
-            document.getElementById("tracking-az-raw-span").textContent = "Error in request";
+            document.getElementById("submit-status-span").textContent = "Error in status update request";
+            document.getElementById("submit-status-span").style.color = "red";
 
             setTimeout(update_status, 500);
         }
@@ -80,6 +81,7 @@ function submit_bearing(desired_bearing)
     if(password == "")
     {
         document.getElementById("submit-status-span").textContent = "Error: Password input empty.";
+        document.getElementById("submit-status-span").style.color = "red";
         return;
     }
 
@@ -90,6 +92,7 @@ function submit_bearing(desired_bearing)
       if (this.status == 403)
       {
         document.getElementById("submit-status-span").textContent = "Error: Password incorrect.";
+        document.getElementById("submit-status-span").style.color = "red";
       }
       else if(this.status != 200)
       {
@@ -100,6 +103,7 @@ function submit_bearing(desired_bearing)
     request.send(encodeURI('bearing='+String(desired_bearing)+'&password='+String(password)));
 
     document.getElementById("submit-status-span").textContent = "Command sent.";
+    document.getElementById("submit-status-span").style.color = "green";
 }
 
 document.getElementById("submit-button").onclick = function()
@@ -110,6 +114,7 @@ document.getElementById("submit-button").onclick = function()
     if(desired_bearing < 0 || desired_bearing > 360)
     {
         document.getElementById("submit-status-span").textContent = "Error: Bearing input invalid (0=<x<=360.";
+        document.getElementById("submit-status-span").style.color = "red";
         return;
     }
 

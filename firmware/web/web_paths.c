@@ -2,6 +2,11 @@
 
 static char http_response[4096];
 
+/* 403 - Forbidden */
+static const char http_403_json_hdr[] = "HTTP/1.0 HTTP/1.0 403 Forbidden\r\nContent-type: application/javascript\r\n\r\n";
+//static const char http_403_hdr[] = "HTTP/1.0 HTTP/1.0 403 Forbidden\r\nContent-type: text/html\r\n\r\n";
+//static const char http_403_body[] = "<html><body><h4>Forbidden</h4></body></html>";
+
 /* 404 - File Not Found */
 static const char http_404_hdr[] = "HTTP/1.0 404 Not Found\r\nContent-type: text/html\r\n\r\n";
 static const char http_404_body[] = "<html><body><h4>Path not found</h4></body></html>";
@@ -119,8 +124,6 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
   char *password_ptr;
   int desired_bearing;
 
-  netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
-
   /*** Check Password ***/
 
   password_ptr = strstr(postbody_buffer, "password=");
@@ -131,6 +134,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
         "\"error\":\"Failed to parse request (password not found)\""
       "}"
     );
+    netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
     netconn_write(conn, http_response, n, NETCONN_NOFLAG);
     return;
   }
@@ -142,6 +146,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
         "\"error\":\"Incorrect password!\""
       "}"
     );
+    netconn_write(conn, http_403_json_hdr, sizeof(http_403_json_hdr)-1, NETCONN_NOCOPY);
     netconn_write(conn, http_response, n, NETCONN_NOFLAG);
     return;
   }
@@ -156,6 +161,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
         "\"error\":\"Failed to parse request (bearing not found)\""
       "}"
     );
+    netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
     netconn_write(conn, http_response, n, NETCONN_NOFLAG);
     return;
   }
@@ -171,6 +177,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
       "}"
       , desired_bearing
     );
+    netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
     netconn_write(conn, http_response, n, NETCONN_NOFLAG);
     return;
   }
@@ -187,6 +194,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
     tracking_state.desired_az_deg
   );
 
+  netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
   netconn_write(conn, http_response, n, NETCONN_NOFLAG);
 }
 
