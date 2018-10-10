@@ -32,21 +32,30 @@ static void web_path_index_js(struct netconn *conn);
 static const char http_json_hdr[] = "HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n";
 static void web_path_api_status(struct netconn *conn);
 
+/* PNG Image */
+static const char http_png_gz_hdr[] = "HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-type: image/png\r\n\r\n";
+#include "dist/favicon_png_gz.h"
+static void web_path_favicon_png(struct netconn *conn);
+
 /* Binary Files */
 //static const char http_binary_hdr[] = "HTTP/1.0 200 OK\r\nContent-Type:application/octet-stream\r\n\r\n";
 //static const char http_binary_gz_hdr[] = "HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-Type:application/octet-stream\r\n\r\n";
 
 void web_paths_get(struct netconn *conn, char *url_buffer)
 {
-  if(strcmp("/",url_buffer) == 0 || strcmp("/index.html",url_buffer) == 0)
+  if(strcmp("/", url_buffer) == 0 || strcmp("/index.html", url_buffer) == 0)
   {
     web_path_index_html(conn);
   }
-  else if(strcmp("/index.js",url_buffer) == 0)
+  else if(strcmp("/index.js", url_buffer) == 0)
   {
     web_path_index_js(conn);
   }
-  else if(strcmp("/api/status",url_buffer) == 0)
+  else if(strcmp("/favicon.png", url_buffer) == 0)
+  {
+    web_path_favicon_png(conn);
+  }
+  else if(strcmp("/api/status", url_buffer) == 0)
   {
     web_path_api_status(conn);
   }
@@ -62,10 +71,16 @@ static void web_path_404(struct netconn *conn)
   netconn_write(conn, http_404_body, sizeof(http_404_body), NETCONN_NOCOPY);
 }
 
+static void web_path_favicon_png(struct netconn *conn)
+{
+  netconn_write(conn, http_png_gz_hdr, sizeof(http_png_gz_hdr)-1, NETCONN_NOCOPY);
+  netconn_write(conn, favicon_png_gz, favicon_png_gz_len, NETCONN_NOCOPY);
+}
+
 static void web_path_index_html(struct netconn *conn)
 {
   netconn_write(conn, http_html_gz_hdr, sizeof(http_html_gz_hdr)-1, NETCONN_NOCOPY);
-  netconn_write(conn, index_html_gz,  index_html_gz_len, NETCONN_NOCOPY);
+  netconn_write(conn, index_html_gz, index_html_gz_len, NETCONN_NOCOPY);
 }
 
 static void web_path_index_js(struct netconn *conn)

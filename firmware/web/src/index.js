@@ -1,4 +1,11 @@
-document.getElementById("compass-needle").style.display = 'none';
+var compass_needle = document.getElementById("compass-needle");
+var tracking_az_deg_span = document.getElementById("tracking-az-deg-span");
+var tracking_az_deg_desired_span = document.getElementById("tracking-az-deg-desired-span");
+var tracking_cw_span = document.getElementById("tracking-cw-span");
+var tracking_ccw_span = document.getElementById("tracking-ccw-span");
+
+compass_needle.style.display = 'none';
+
 update_status();
 
 function update_status()
@@ -6,29 +13,37 @@ function update_status()
     json_req('/api/status',
         function(data)
         {
-            document.getElementById("tracking-az-deg-desired-span").textContent = (data.desired_az_ddeg / 10).toFixed(1);
-            document.getElementById("tracking-az-deg-span").textContent = (data.az_ddeg / 10).toFixed(1);
+            tracking_az_deg_span.textContent = (data.az_ddeg / 10).toFixed(1);
             if(data.cw == 1)
             {
-                document.getElementById("tracking-cw-span").style.color = '#000';
+                tracking_cw_span.style.color = '#000';
             }
             else
             {
-                document.getElementById("tracking-cw-span").style.color = '#888';
+                tracking_cw_span.style.color = '#888';
             }
             if(data.ccw == 1)
             {
-                document.getElementById("tracking-ccw-span").style.color = '#000';
+                tracking_ccw_span.style.color = '#000';
             }
             else
             {
-                document.getElementById("tracking-ccw-span").style.color = '#888';
+                tracking_ccw_span.style.color = '#888';
+            }
+
+            if(data.cw == 1 || data.ccw == 1)
+            {
+                tracking_az_deg_desired_span.textContent = (data.desired_az_ddeg / 10).toFixed(1);
+            }
+            else
+            {
+                tracking_az_deg_desired_span.textContent = '---';
             }
             
-            document.getElementById("compass-needle").setAttribute('transform','rotate('+(data.az_ddeg / 10)+' 50 50)');
-            document.getElementById("compass-needle").style.display = '';
+            compass_needle.setAttribute('transform','rotate('+(data.az_ddeg / 10)+' 50 50)');
+            compass_needle.style.display = '';
 
-            console.log("Raw: AZ: "+data.az_raw);
+            //console.log("Raw: AZ: "+data.az_raw);
 
             if('el_ddeg' in data)
             {
@@ -37,7 +52,7 @@ function update_status()
                 document.getElementById("tracking-down-span").textContent = data.down;
                 document.getElementById("tracking-el-deg-desired-span").textContent = (data.desired_el_ddeg / 10).toFixed(1);
 
-                console.log("Raw: EL: "+data.el_raw);
+                //console.log("Raw: EL: "+data.el_raw);
             }
 
             setTimeout(update_status, 500);
@@ -89,14 +104,11 @@ function submit_bearing(desired_bearing)
     request.open('POST', '/new_bearing', true);
     request.onload = function()
     {
-      if (this.status == 403)
+      var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));
+      if('error' in data)
       {
-        document.getElementById("submit-status-span").textContent = "Error: Password incorrect.";
+        document.getElementById("submit-status-span").textContent = data.error;
         document.getElementById("submit-status-span").style.color = "red";
-      }
-      else if(this.status != 200)
-      {
-        console.log("submit_bearing: Unknown response: "+this.status);
       }
     };
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');

@@ -3,9 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="description" content="G-5500 Rotator Controller">
+<meta name="description" content="GB3HV Rotator Web Interface">
 <meta name="author" content="Phil Crump M0DNY">
-<title>G-5500 Rotator Controller</title>
+<link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+<title>GB3HV Rotator Control</title>
 <style>
 body {
     text-align: center;
@@ -35,24 +36,7 @@ table {
 </style>
 </head>
 <body>
-<h1>G-5500 Rotator Controller</h1>
-<table>
-<tr>
-  <th></th>
-  <th>Position</th>
-  <th>Command</th>
- </tr>
-<tr>
-  <td>Azimuth</td>
-  <td><span id="tracking-az-deg-span">---.-</span>°</td>
-  <td><span id="tracking-az-deg-desired-span">---.-</span>°</td>
-</tr>
-<tr id="statustable-elevation">
-  <td>Elevation</td>
-  <td><span id="tracking-el-deg-span">---.-</span>°</td>
-  <td><span id="tracking-el-deg-desired-span">---.-</span>°</td>
-</tr>
-</table>
+<h1>GB3HV Rotator Control</h1>
 
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="200px" viewBox="0 0 100 100" xml:space="preserve">
 	<svg>
@@ -290,8 +274,26 @@ table {
 		</g>
 	</svg>
 </svg>
+<table>
+<tr>
+  <th></th>
+  <th>Position</th>
+  <th>Command</th>
+ </tr>
+<tr>
+  <td>Azimuth</td>
+  <td><span id="tracking-az-deg-span">---.-</span>°</td>
+  <td><span id="tracking-az-deg-desired-span">---.-</span>°</td>
+</tr>
+<tr id="statustable-elevation">
+  <td>Elevation</td>
+  <td><span id="tracking-el-deg-span">---.-</span>°</td>
+  <td><span id="tracking-el-deg-desired-span">---.-</span>°</td>
+</tr>
+</table>
 <br />
 <b>Password:</b> <input type="password" id="password-input"></input><br />
+<br />
 <table>
 	<tr>
 		<td><button class="table-bearings-button" onclick="submit_bearing(0);">North - <b>000°</b></button></td>
@@ -317,14 +319,15 @@ table {
 		<td><button class="table-bearings-button" onclick="submit_bearing(175);">Worthing / Le Havre - <b>175°</b></button></td>
 		<td><button class="table-bearings-button" onclick="submit_bearing(346);">(G1HBD / G8DKC) - <b>346°</b></button></td>
 	</tr>
+	<tr>
+		<td colspan="2"><b>Manual Bearing:</b> <input type="text" id="bearing-input"></input>°&nbsp;<button id="submit-button">Go</button></td>
+	</tr>
 </table>
 
-<b>Manual Bearing:</b> <input type="text" id="bearing-input"></input>°<br />
-<button id="submit-button">Go</button><br />
 <span id="submit-status-span"></span><br />
+<br />
 
 <b>Output State</b> <span id="tracking-cw-span">CW</span> <span id="tracking-ccw-span">CCW</span><br />
-<br />
 
 <div id="footer">
 	<pre>© Phil Crump M0DNY <phil@philcrump.co.uk></pre>
