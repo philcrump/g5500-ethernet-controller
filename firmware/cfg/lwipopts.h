@@ -38,10 +38,7 @@
 #ifndef __LWIPOPT_H__
 #define __LWIPOPT_H__
 
-/* Fixed settings mandated by the ChibiOS integration.*/
-#include "static_lwipopts.h"
-
-#define LWIP_LINK_POLL_INTERVAL             TIME_MS2I(100)
+#define LWIP_LINK_POLL_INTERVAL             MS2ST(100)
 
 // Use system time
 //#define LWIP_TIMEVAL_PRIVATE 0

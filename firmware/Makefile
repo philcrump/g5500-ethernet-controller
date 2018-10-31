@@ -102,8 +102,6 @@ endif
 CHIBIOS = ChibiOS
 CONFDIR  := ./cfg
 
-# Licensing files.
-include $(CHIBIOS)/os/license/license.mk
 # Startup files.
 include $(CHIBIOS)/os/common/startup/ARMCMx/compilers/GCC/mk/startup_stm32f4xx.mk
 # HAL-OSAL files (optional).
@@ -127,14 +125,22 @@ LDSCRIPT= $(STARTUPLD)/STM32F429xI.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CSRC = $(ALLCSRC) \
-       $(TESTSRC) \
+CSRC = $(STARTUPSRC) \
+       $(KERNSRC) \
+       $(PORTSRC) \
+       $(OSALSRC) \
+       $(HALSRC) \
+       $(PLATFORMSRC) \
+       $(BOARDSRC) \
+       $(LWSRC) \
+       $(STREAMSSRC) \
+       $(SHELLSRC) \
        $(CHIBIOS)/os/various/evtimer.c \
        $(PROJSRC)
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
-CPPSRC = $(ALLCPPSRC)
+CPPSRC = 
 
 # C sources to be compiled in ARM mode regardless of the global setting.
 # NOTE: Mixing ARM and THUMB mode enables the -mthumb-interwork compiler
@@ -157,10 +163,14 @@ TCSRC =
 TCPPSRC =
 
 # List ASM source files here
-ASMSRC = $(ALLASMSRC)
-ASMXSRC = $(ALLXASMSRC)
+ASMSRC =
+ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
-INCDIR = $(ALLINC) $(TESTINC) $(CONFDIR)
+INCDIR = $(CHIBIOS)/os/license \
+         $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
+         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
+         $(STREAMSINC) $(SHELLINC) $(LWINC) $(FATFSINC) \
+         $(CHIBIOS)/os/various $(CONFDIR)
 
 #
 # Project, sources and paths
@@ -196,7 +206,7 @@ AOPT =
 TOPT = -mthumb -DTHUMB
 
 # Define C warning options here
-CWARN = -Wall -Wextra -Werror -Wundef -Wstrict-prototypes
+CWARN = -Wall -Werror -Wundef -Wstrict-prototypes
 
 # Define C++ warning options here
 CPPWARN = -Wall -Wextra -Werror -Wundef

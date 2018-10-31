@@ -133,8 +133,6 @@ static const ADCConversionGroup adc_az_adcgrpcfg = {
   ADC_CR2_SWSTART,          /* CR2 */
   ADC_SMPR1_SMP_AN11(ADC_SAMPLE_3),
   0,                        /* SMPR2 */
-  0,                        /* HTR */
-  0,                        /* LTR */
   ADC_SQR1_NUM_CH(1),
   0,                        /* SQR2 */
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN6) /* IN6 */
@@ -149,8 +147,6 @@ static const ADCConversionGroup adc_el_adcgrpcfg = {
   ADC_CR2_SWSTART,          /* CR2 */
   ADC_SMPR1_SMP_AN11(ADC_SAMPLE_3),
   0,                        /* SMPR2 */
-  0,                        /* HTR */
-  0,                        /* LTR */
   ADC_SQR1_NUM_CH(1),
   0,                        /* SQR2 */
   ADC_SQR3_SQ1_N(ADC_CHANNEL_IN2) /* IN3 */
