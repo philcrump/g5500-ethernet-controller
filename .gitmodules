@@ -1,7 +1,3 @@
-[submodule "firmware/ChibiOS"]
-	path = firmware/ChibiOS
-	url = https://github.com/ChibiOS/ChibiOS.git
-	branch = stable_17.6.x
 [submodule "layout/agg-kicad"]
 	path = layout/agg-kicad
 	url = https://github.com/adamgreig/agg-kicad.git

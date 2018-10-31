@@ -213,11 +213,63 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
   netconn_write(conn, http_response, n, NETCONN_NOFLAG);
 }
 
+static void web_path_stop(struct netconn *conn, char *postbody_buffer)
+{
+  int n;
+  char *password_ptr;
+
+  /*** Check Password ***/
+
+  password_ptr = strstr(postbody_buffer, "password=");
+  if(password_ptr == NULL)
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Failed to parse request (password not found)\""
+      "}"
+    );
+    netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  if(0 != strncmp(password_ptr + strlen("password="), WEBPASSWORD, strlen(WEBPASSWORD)))
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Incorrect password!\""
+      "}"
+    );
+    netconn_write(conn, http_403_json_hdr, sizeof(http_403_json_hdr)-1, NETCONN_NOCOPY);
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  /*** Success! Set desired to current location ***/
+
+  tracking_state.desired_az_deg = tracking_state.az_deg;
+  tracking_state.desired_az_ddeg = tracking_state.az_ddeg;
+
+  tracking_state.desired_el_deg = tracking_state.el_deg;
+  tracking_state.desired_el_ddeg = tracking_state.el_ddeg;
+  
+  n = snprintf(http_response, 4096,
+    "{}"
+  );
+
+  netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+  netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+}
+
 void web_paths_post(struct netconn *conn, char *url_buffer, char *postbody_buffer)
 {
-  if(strcmp("/new_bearing",url_buffer) == 0)
+  if(strcmp("/new_bearing", url_buffer) == 0)
   {
     web_path_new_bearing(conn, postbody_buffer);
+  }
+  else if(strcmp("/stop", url_buffer) == 0)
+  {
+    web_path_stop(conn, postbody_buffer);
   }
   else
   {
