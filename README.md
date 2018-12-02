@@ -6,9 +6,9 @@ The firmware exposes a web server on port 80, through which the rotator can be m
 
 This project is built on ChibiOS 17.6.x with LwIP 1.4.1
 
-<p float="left" align="middle">
-  <img src="/images/web-screenshot-gb3hv.png" width="49%" />
+<p float="left">
   <img src="/images/board-photo-gb3hv.jpg" width="49%" />
+  <img align="top" src="/images/web-screenshot-gb3hv.png" width="49%" />
 </p>
 
 ## Wiring
