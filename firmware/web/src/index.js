@@ -115,7 +115,7 @@ function submit_bearing(desired_bearing)
       }
     };
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-    request.send(encodeURI('bearing='+String(desired_bearing)+'&password='+String(password)));
+    request.send(encodeURI('ddeg_az='+String(desired_bearing*10)+'&password='+String(password)));
 
     document.getElementById("submit-status-span").textContent = "Command sent.";
     document.getElementById("submit-status-span").style.color = "green";

@@ -232,6 +232,11 @@ THD_FUNCTION(http_server, p) {
   }
 }
 
+void web_init(void)
+{
+  chThdCreateStatic(wa_http_server, sizeof(wa_http_server), NORMALPRIO + 1, http_server, NULL);
+}
+
 #endif /* LWIP_NETCONN */
 
 /** @} */

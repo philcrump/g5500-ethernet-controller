@@ -11,10 +11,7 @@ static void gs232_parse(char* command_buffer, uint32_t command_length, char *res
     if(command_length >= 2 && 0==strncmp("S\r", command_buffer, 2))
     {
         /* S - Stop */
-        tracking_state.desired_az_ddeg = tracking_state.az_ddeg;
-        tracking_state.desired_az_deg = tracking_state.az_deg;
-        tracking_state.desired_el_ddeg = tracking_state.el_ddeg;
-        tracking_state.desired_el_deg = tracking_state.el_deg;
+        tracking_set_stop();
 
         *response_length = 0;
         return;
@@ -22,33 +19,46 @@ static void gs232_parse(char* command_buffer, uint32_t command_length, char *res
     else if(command_length >= 2 && 0==strncmp("C\r", command_buffer, 2))
     {
         /* C - Query Azimuth position */
+        int16_t az_ddeg;
+        tracking_get_state_ddeg(&az_ddeg, NULL);
+
         *response_length = snprintf(response_buffer, response_maxlength, "AZ=%03d\r",
-            tracking_state.az_deg
+            az_ddeg
         );
         return;
     }
     else if(command_length >= 2 && 0==strncmp("B\r", command_buffer, 2))
     {
         /* B - Query Elevation position */
+        int16_t el_ddeg;
+        tracking_get_state_ddeg(NULL, &el_ddeg);
+
         *response_length = snprintf(response_buffer, response_maxlength, "EL=%03d\r",
-            tracking_state.el_deg
+            el_ddeg
         );
         return;
     }
     else if(command_length >= 3 && 0==strncmp("C2\r", command_buffer, 3))
     {
         /* C2 - Query Azimuth & Elevation position */
+        int16_t az_ddeg, el_ddeg;
+        tracking_get_state_ddeg(&az_ddeg, &el_ddeg);
+
         *response_length = snprintf(response_buffer, response_maxlength, "AZ=%03d EL=%03d\r",
-            tracking_state.az_deg,
-            tracking_state.el_deg
+            az_ddeg,
+            el_ddeg
         );
         return;
     }
     else if(command_length >= 5 && 0==strncmp("M", command_buffer, 1))
     {
         /* M - Set Azimuth position */
-        sscanf(command_buffer, "M%03hd\r", &tracking_state.desired_az_deg);
-        tracking_state.desired_az_ddeg = tracking_state.desired_az_deg * 10;
+        int16_t desired_az_ddeg;
+
+        sscanf(command_buffer, "M%03hd\r", &desired_az_ddeg);
+        desired_az_ddeg *= 10;
+
+        tracking_set_desired_ddeg(&desired_az_ddeg, NULL);
 
         *response_length = 0;
         return;
@@ -56,9 +66,13 @@ static void gs232_parse(char* command_buffer, uint32_t command_length, char *res
     else if(command_length >= 9 && 0==strncmp("W", command_buffer, 1))
     {
         /* W - Set Azimuth & Elevation */
-        sscanf(command_buffer, "W%03hd %03hd\r", &tracking_state.desired_az_deg, &tracking_state.desired_el_deg);
-        tracking_state.desired_az_ddeg = tracking_state.desired_az_deg * 10;
-        tracking_state.desired_el_ddeg = tracking_state.desired_el_deg * 10;
+        int16_t desired_az_ddeg, desired_el_ddeg;
+
+        sscanf(command_buffer, "W%03hd %03hd\r", &desired_az_ddeg, &desired_el_ddeg);
+        desired_az_ddeg *= 10;
+        desired_el_ddeg *= 10;
+
+        tracking_set_desired_ddeg(&desired_az_ddeg, &desired_el_ddeg);
 
         *response_length = 0;
         return;

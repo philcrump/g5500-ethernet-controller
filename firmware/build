@@ -65,6 +65,38 @@ patch_lwip_dhcpretry_3s() {
   fi
 }
 
+patch_lwip_use_system_time() {
+  patch -p1 -d ${CHIBIOS_SRC} -N --binary --dry-run --silent < lwip-use-system-time.patch > /dev/null;
+  if [ $? -eq 0 ];
+  then
+    printf "$_INFO_ Patching LwIP.. ";
+    patch -p1 -d ${CHIBIOS_SRC} -N --binary --silent < lwip-use-system-time.patch;
+    if [ $? -eq 0 ];
+    then
+      printf "${COLOUR_GREEN}OK${COLOUR_OFF}\n";
+    else
+      printf "${COLOUR_RED}FAILED${COLOUR_OFF}\n";
+      exit 1;
+    fi
+  fi
+}
+
+patch_lwip_use_defined_hostname() {
+  patch -p1 -d ${CHIBIOS_SRC} -N --binary --dry-run --silent < lwip-use-defined-hostname.patch > /dev/null;
+  if [ $? -eq 0 ];
+  then
+    printf "$_INFO_ Patching LwIP.. ";
+    patch -p1 -d ${CHIBIOS_SRC} -N --binary --silent < lwip-use-defined-hostname.patch;
+    if [ $? -eq 0 ];
+    then
+      printf "${COLOUR_GREEN}OK${COLOUR_OFF}\n";
+    else
+      printf "${COLOUR_RED}FAILED${COLOUR_OFF}\n";
+      exit 1;
+    fi
+  fi
+}
+
 hyphenjoin() {
   str=""
   while [ $# -gt 0 ]
@@ -148,9 +180,11 @@ fi
 ## Prepare ChibiOS Dependencies
 
 unpack_lwip
-#unpack_wolfssl
+#unpack_wolfssl ## For ChibiOS 18.2.x
 
-patch_lwip_dhcpretry_3s
+#patch_lwip_dhcpretry_3s ## For ChibiOS 18.2.x
+patch_lwip_use_system_time
+patch_lwip_use_defined_hostname
 
 web/build
 

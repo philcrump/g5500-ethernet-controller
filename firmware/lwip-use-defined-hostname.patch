@@ -1,0 +1,15 @@
+--- a/os/various/lwip_bindings/lwipthread.c	2018-10-31 23:15:27.775005507 +0000
++++ b/os/various/lwip_bindings/lwipthread.c	2018-12-02 14:19:41.541636324 +0000
+@@ -187,7 +187,11 @@
+ static err_t ethernetif_init(struct netif *netif) {
+ #if LWIP_NETIF_HOSTNAME
+   /* Initialize interface hostname */
+-  netif->hostname = "lwip";
++  #if defined(LWIP_HOSTNAME)
++    netif->hostname = LWIP_HOSTNAME;
++  #else
++    netif->hostname = "lwip";
++  #endif
+ #endif /* LWIP_NETIF_HOSTNAME */
+ 
+   /*

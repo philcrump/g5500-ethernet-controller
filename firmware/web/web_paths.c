@@ -2,6 +2,10 @@
 
 static char http_response[4096];
 
+static const char http_robots_txt_hdr[] = "HTTP/1.0 200 OK\r\nContent-Type: text/plain\r\n\r\n";
+static const char http_robots_txt_body[] = "User-agent: *\r\nDisallow: /";
+static void web_path_robots_txt(struct netconn *conn);
+
 /* 403 - Forbidden */
 static const char http_403_json_hdr[] = "HTTP/1.0 HTTP/1.0 403 Forbidden\r\nContent-type: application/javascript\r\n\r\n";
 //static const char http_403_hdr[] = "HTTP/1.0 HTTP/1.0 403 Forbidden\r\nContent-type: text/html\r\n\r\n";
@@ -59,6 +63,10 @@ void web_paths_get(struct netconn *conn, char *url_buffer)
   {
     web_path_api_status(conn);
   }
+  else if(strcmp("/robots.txt", url_buffer) == 0)
+  {
+    web_path_robots_txt(conn);
+  }
   else
   {
     web_path_404(conn);
@@ -83,6 +91,12 @@ static void web_path_index_html(struct netconn *conn)
   netconn_write(conn, index_html_gz, index_html_gz_len, NETCONN_NOCOPY);
 }
 
+static void web_path_robots_txt(struct netconn *conn)
+{
+  netconn_write(conn, http_robots_txt_hdr, sizeof(http_robots_txt_hdr)-1, NETCONN_NOCOPY);
+  netconn_write(conn, http_robots_txt_body, sizeof(http_robots_txt_body)-1, NETCONN_NOCOPY);
+}
+
 static void web_path_index_js(struct netconn *conn)
 {
   netconn_write(conn, http_javascript_gz_hdr, sizeof(http_javascript_gz_hdr)-1, NETCONN_NOCOPY);
@@ -92,8 +106,11 @@ static void web_path_index_js(struct netconn *conn)
 static void web_path_api_status(struct netconn *conn)
 {
   int n;
+  struct tracking_state_t state_copy;
 
   netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+
+  tracking_copy_state(&state_copy);
 
   n = snprintf(http_response, 4096,
     "{"
@@ -110,17 +127,17 @@ static void web_path_api_status(struct netconn *conn)
       "\"desired_el_ddeg\":%d"
 #endif
     "}",
-    tracking_state.az_raw,
-    tracking_state.az_ddeg,
-    tracking_state.cw,
-    tracking_state.ccw,
-    tracking_state.desired_az_ddeg
+    state_copy.az_raw,
+    state_copy.az_ddeg,
+    state_copy.cw,
+    state_copy.ccw,
+    state_copy.desired_az_ddeg
 #ifdef ELEVATION_ENABLED
-    ,tracking_state.el_raw,
-    tracking_state.el_ddeg,
-    tracking_state.up,
-    tracking_state.down,
-    tracking_state.desired_el_ddeg
+    ,state_copy.el_raw,
+    state_copy.el_ddeg,
+    state_copy.up,
+    state_copy.down,
+    state_copy.desired_el_ddeg
 #endif
   );
 
@@ -137,7 +154,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
   int n;
   char *bearing_ptr;
   char *password_ptr;
-  int desired_bearing;
+  int16_t desired_ddeg_az;
 
   /*** Check Password ***/
 
@@ -168,12 +185,12 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
 
   /*** Check bearing ***/
 
-  bearing_ptr = strstr(postbody_buffer, "bearing=");
+  bearing_ptr = strstr(postbody_buffer, "ddeg_az=");
   if(bearing_ptr == NULL)
   {
     n = snprintf(http_response, 4096,
       "{"
-        "\"error\":\"Failed to parse request (bearing not found)\""
+        "\"error\":\"Failed to parse request (ddeg_az not found)\""
       "}"
     );
     netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
@@ -181,16 +198,16 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
     return;
   }
 
-  desired_bearing = strtol(bearing_ptr + strlen("bearing="), NULL, 10);
+  desired_ddeg_az = strtol(bearing_ptr + strlen("ddeg_az="), NULL, 10);
 
-  if(desired_bearing < 0 || desired_bearing > 360)
+  if(desired_ddeg_az < 0 || desired_ddeg_az > 3600)
   {
     n = snprintf(http_response, 4096,
       "{"
         "\"error\":\"Bearing out of range\","
-        "\"new_bearing\":%d"
+        "\"new_ddeg_az\":%d"
       "}"
-      , desired_bearing
+      , desired_ddeg_az
     );
     netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
     netconn_write(conn, http_response, n, NETCONN_NOFLAG);
@@ -198,15 +215,13 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
   }
 
   /*** Success! Set bearing ***/
-
-  tracking_state.desired_az_deg = desired_bearing;
-  tracking_state.desired_az_ddeg = tracking_state.desired_az_deg * 10;
+  tracking_set_desired_ddeg(&desired_ddeg_az, NULL);
   
   n = snprintf(http_response, 4096,
     "{"
-      "\"new_bearing\":%d"
+      "\"new_ddeg_az\":%d"
     "}",
-    tracking_state.desired_az_deg
+    desired_ddeg_az
   );
 
   netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
@@ -245,13 +260,8 @@ static void web_path_stop(struct netconn *conn, char *postbody_buffer)
     return;
   }
 
-  /*** Success! Set desired to current location ***/
-
-  tracking_state.desired_az_deg = tracking_state.az_deg;
-  tracking_state.desired_az_ddeg = tracking_state.az_ddeg;
-
-  tracking_state.desired_el_deg = tracking_state.el_deg;
-  tracking_state.desired_el_ddeg = tracking_state.el_ddeg;
+  /*** Success! Stop Tracking ***/
+  tracking_set_stop();
   
   n = snprintf(http_response, 4096,
     "{}"
