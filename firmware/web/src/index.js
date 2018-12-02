@@ -104,7 +104,7 @@ function submit_bearing(desired_bearing)
     }
 
     var request = new XMLHttpRequest();
-    request.open('POST', '/new_bearing', true);
+    request.open('POST', '/api/new_bearing', true);
     request.onload = function()
     {
       var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));
@@ -149,7 +149,7 @@ stop_button.onclick = function()
   }
 
   var request = new XMLHttpRequest();
-  request.open('POST', '/stop', true);
+  request.open('POST', '/api/stop', true);
   request.onload = function()
   {
     var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));

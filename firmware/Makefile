@@ -6,6 +6,8 @@ PROJSRC = tracking/tracking.c \
           gs232/gs232.c \
           web/web.c \
           web/web_paths.c \
+          settings/settings.c \
+          crc/crc.c \
           main.c
 
 BUILDDIR = builds
@@ -121,7 +123,7 @@ include $(CHIBIOS)/os/various/shell/shell.mk
 include $(CHIBIOS)/os/various/lwip_bindings/lwip.mk
 
 # Define linker script file here
-LDSCRIPT= $(STARTUPLD)/STM32F429xI.ld
+LDSCRIPT= $(CONFDIR)/STM32F429xI-minus1sector.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.

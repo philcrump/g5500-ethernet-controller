@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="description" content="GB3HV Rotator Control - Settings">
+<meta name="author" content="Phil Crump M0DNY">
+<link rel="icon" type="image/png" href="/favicon.png" sizes="32x32">
+<title>GB3HV Rotator Control - Settings</title>
+<style>
+body {
+    text-align: center;
+    font-family: "Open Sans", Arial, sans-serif;
+	font-size: 16px;
+}
+table {
+	margin: 0px auto;
+}
+#footer {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+</style>
+</head>
+<body>
+<h1>GB3HV Rotator Control - Settings</h1>
+<b>Current Password:</b> <input type="password" id="password-input"></input><br />
+
+New Password: <input type="password" id="new-password-input"></input>
+<button id="new-password-submit">Go</button>
+<br />
+
+
+<h4>Presets</h4>
+<table>
+	<tr>
+		<td><button class="table-bearings-button" onclick="submit_bearing(0);">North - <b>000°</b></button></td>
+		<td><button class="table-bearings-button" onclick="submit_bearing(200);">P'mouth / C'bourg - <b>200°</b></button></td>
+	</tr>
+	<tr>
+		<td><button class="table-bearings-button" onclick="submit_bearing(19);">Luton (G4CPE) - <b>019°</b></button></td>
+		<td><button class="table-bearings-button" onclick="submit_bearing(235);">Soton / B'mouth (G4KLB) - <b>235°</b></button></td>
+	</tr>
+	<tr>
+		<td><button class="table-bearings-button" onclick="submit_bearing(25);">Pinner (G8ADM) - <b>025°</b></button></td>
+		<td><button class="table-bearings-button" onclick="submit_bearing(275);">Basingstoke (G8GTZ) - <b>275°</b></button></td>
+	</tr>
+	<tr>
+		<td><button class="table-bearings-button" onclick="submit_bearing(56);">London - <b>056°</b></button></td>
+		<td><button class="table-bearings-button" onclick="submit_bearing(300);">Newbury (G8DGR) - <b>300°</b></button></td>
+	</tr>
+	<tr>
+		<td><button class="table-bearings-button" onclick="submit_bearing(150);">Brighton / Paris - <b>150°</b></button></td>
+		<td><button class="table-bearings-button" onclick="submit_bearing(340);">Reading - <b>340°</b></button></td>
+	</tr>
+	<tr>
+		<td><button class="table-bearings-button" onclick="submit_bearing(175);">Worthing / Le Havre - <b>175°</b></button></td>
+		<td><button class="table-bearings-button" onclick="submit_bearing(346);">(G1HBD / G8DKC) - <b>346°</b></button></td>
+	</tr>
+	<tr>
+		<td colspan="2"><b>Manual Bearing:</b> <input type="text" id="bearing-input"></input>°&nbsp;<button id="submit-button">Go</button></td>
+	</tr>
+</table>
+
+<span id="submit-status-span"></span><br />
+<br />
+
+<div id="footer">
+	<pre>© Phil Crump M0DNY <phil@philcrump.co.uk></pre>
+</div>
+
+</body>
+<script src="settings.js"></script>
+</html>

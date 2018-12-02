@@ -5,6 +5,8 @@ int main(void)
   halInit();
   chSysInit();
 
+  settings_init();
+
   lwipInit(NULL);
 
   tracking_init();

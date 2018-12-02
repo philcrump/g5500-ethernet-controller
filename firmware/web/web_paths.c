@@ -21,6 +21,8 @@ static void web_path_404(struct netconn *conn);
 static const char http_html_gz_hdr[] = "HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-type: text/html\r\n\r\n";
 #include "dist/index_html_gz.h"
 static void web_path_index_html(struct netconn *conn);
+#include "dist/settings_html_gz.h"
+static void web_path_settings_html(struct netconn *conn);
 
 /* CSS */
 //static const char http_css_hdr[] = "HTTP/1.0 200 OK\r\nContent-type: text/css\r\n\r\n";
@@ -35,6 +37,7 @@ static void web_path_index_js(struct netconn *conn);
 /* JSON API */
 static const char http_json_hdr[] = "HTTP/1.0 200 OK\r\nContent-type: application/json\r\n\r\n";
 static void web_path_api_status(struct netconn *conn);
+static void web_path_api_presets_get(struct netconn *conn);
 
 /* PNG Image */
 static const char http_png_gz_hdr[] = "HTTP/1.0 200 OK\r\nContent-Encoding: gzip\r\nContent-type: image/png\r\n\r\n";
@@ -55,6 +58,10 @@ void web_paths_get(struct netconn *conn, char *url_buffer)
   {
     web_path_index_js(conn);
   }
+  else if(strcmp("/settings", url_buffer) == 0)
+  {
+    web_path_settings_html(conn);
+  }
   else if(strcmp("/favicon.png", url_buffer) == 0)
   {
     web_path_favicon_png(conn);
@@ -62,6 +69,10 @@ void web_paths_get(struct netconn *conn, char *url_buffer)
   else if(strcmp("/api/status", url_buffer) == 0)
   {
     web_path_api_status(conn);
+  }
+  else if(strcmp("/api/presets_get", url_buffer) == 0)
+  {
+    web_path_api_presets_get(conn);
   }
   else if(strcmp("/robots.txt", url_buffer) == 0)
   {
@@ -89,6 +100,12 @@ static void web_path_index_html(struct netconn *conn)
 {
   netconn_write(conn, http_html_gz_hdr, sizeof(http_html_gz_hdr)-1, NETCONN_NOCOPY);
   netconn_write(conn, index_html_gz, index_html_gz_len, NETCONN_NOCOPY);
+}
+
+static void web_path_settings_html(struct netconn *conn)
+{
+  netconn_write(conn, http_html_gz_hdr, sizeof(http_html_gz_hdr)-1, NETCONN_NOCOPY);
+  netconn_write(conn, settings_html_gz, settings_html_gz_len, NETCONN_NOCOPY);
 }
 
 static void web_path_robots_txt(struct netconn *conn)
@@ -144,12 +161,46 @@ static void web_path_api_status(struct netconn *conn)
   netconn_write(conn, http_response, n, NETCONN_NOFLAG);
 }
 
-#ifndef WEBPASSWORD
- #error "Must define WEBPASSWORD"
- #define WEBPASSWORD  ""
-#endif
+static void web_path_api_presets_get(struct netconn *conn)
+{
+  int i, n;
+  settings_preset_t presets[SETTINGS_PRESETS_NUMBER];
 
-static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
+  netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+
+  settings_get_presets(presets);
+
+  n = snprintf(http_response, 4096,
+    "{"
+  );
+
+  for(i=0; i<SETTINGS_PRESETS_NUMBER; i++)
+  {
+    if(presets[i].valid)
+    {
+      n = snprintf(http_response, 4096-n,
+        "%s"
+        "\"preset_%d\":{"
+        "\"name\":%s"
+        "\"ddeg\":%d"
+        "},"
+        , http_response
+        , i
+        , presets[i].name
+        , presets[i].ddeg
+      );
+    }
+  }
+
+  n = snprintf(http_response, 4096-n,
+    "%s}"
+    , http_response
+  );
+
+  netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+}
+
+static void web_path_api_new_bearing(struct netconn *conn, char *postbody_buffer)
 {
   int n;
   char *bearing_ptr;
@@ -171,7 +222,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
     return;
   }
 
-  if(0 != strncmp(password_ptr + strlen("password="), WEBPASSWORD, strlen(WEBPASSWORD)))
+  if(!settings_check_password(password_ptr + strlen("password=")))
   {
     n = snprintf(http_response, 4096,
       "{"
@@ -228,7 +279,7 @@ static void web_path_new_bearing(struct netconn *conn, char *postbody_buffer)
   netconn_write(conn, http_response, n, NETCONN_NOFLAG);
 }
 
-static void web_path_stop(struct netconn *conn, char *postbody_buffer)
+static void web_path_api_stop(struct netconn *conn, char *postbody_buffer)
 {
   int n;
   char *password_ptr;
@@ -248,7 +299,7 @@ static void web_path_stop(struct netconn *conn, char *postbody_buffer)
     return;
   }
 
-  if(0 != strncmp(password_ptr + strlen("password="), WEBPASSWORD, strlen(WEBPASSWORD)))
+  if(!settings_check_password(password_ptr + strlen("password=")))
   {
     n = snprintf(http_response, 4096,
       "{"
@@ -271,15 +322,102 @@ static void web_path_stop(struct netconn *conn, char *postbody_buffer)
   netconn_write(conn, http_response, n, NETCONN_NOFLAG);
 }
 
+static void web_path_api_presets_set(struct netconn *conn, char *postbody_buffer)
+{
+  int n;
+  char *password_ptr;
+
+  /*** Check Password ***/
+
+  password_ptr = strstr(postbody_buffer, "password=");
+  if(password_ptr == NULL)
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Failed to parse request (password not found)\""
+      "}"
+    );
+    netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  if(!settings_check_password(password_ptr + strlen("password=")))
+  {
+    n = snprintf(http_response, 4096,
+      "{"
+        "\"error\":\"Incorrect password!\""
+      "}"
+    );
+    netconn_write(conn, http_403_json_hdr, sizeof(http_403_json_hdr)-1, NETCONN_NOCOPY);
+    netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+    return;
+  }
+
+  /*** Process Presets ***/
+  int i;
+  char *preset_ptr;
+  char *preset_endptr;
+  char preset_string[16];
+  settings_preset_t presets[SETTINGS_PRESETS_NUMBER];
+
+  for(i=0; i<SETTINGS_PRESETS_NUMBER; i++)
+  {
+    snprintf(preset_string, sizeof(preset_string), "p%dn=", i);
+    preset_ptr = strstr(postbody_buffer, preset_string);
+    preset_endptr = strstr(preset_ptr, ",");
+
+    if(preset_ptr == NULL)
+    {
+      presets[i].valid = false;
+    }
+    else
+    {
+      presets[i].valid = true;
+      strncpy(presets[i].name, preset_ptr + strlen(preset_string), preset_endptr - (preset_ptr + strlen(preset_string)));
+    }
+  }
+
+  for(i=0; i<SETTINGS_PRESETS_NUMBER; i++)
+  {
+    snprintf(preset_string, sizeof(preset_string), "p%ddd=", i);
+    preset_ptr = strstr(postbody_buffer, preset_string);
+    preset_endptr = strstr(preset_ptr, ",");
+
+    if(preset_ptr == NULL)
+    {
+      presets[i].valid = false;
+    }
+    else
+    {
+      presets[i].valid = true;
+      presets[i].ddeg = strtol(preset_ptr + strlen(preset_string), NULL, 10);
+    }
+  }
+
+  settings_set_presets(presets);
+  
+  n = snprintf(http_response, 4096,
+    "{}"
+  );
+
+  netconn_write(conn, http_json_hdr, sizeof(http_json_hdr)-1, NETCONN_NOCOPY);
+  netconn_write(conn, http_response, n, NETCONN_NOFLAG);
+}
+
 void web_paths_post(struct netconn *conn, char *url_buffer, char *postbody_buffer)
 {
-  if(strcmp("/new_bearing", url_buffer) == 0)
+  if(strcmp("/api/new_bearing", url_buffer) == 0)
   {
-    web_path_new_bearing(conn, postbody_buffer);
+    web_path_api_new_bearing(conn, postbody_buffer);
   }
-  else if(strcmp("/stop", url_buffer) == 0)
+  else if(strcmp("/api/stop", url_buffer) == 0)
   {
-    web_path_stop(conn, postbody_buffer);
+    web_path_api_stop(conn, postbody_buffer);
+  }
+  else if(strcmp("/api/presets_set", url_buffer) == 0)
+  {
+    web_path_api_presets_set(conn, postbody_buffer);
   }
   else
   {

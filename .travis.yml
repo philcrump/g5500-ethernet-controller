@@ -27,4 +27,4 @@ install:
   - export PATH=$PATH:$GCC_DIR/bin
 
 # Command to run tests
-script: cd firmware/ && ./build WEBPASSWORD=\\\"dummy\\\"
+script: cd firmware/ && ./build

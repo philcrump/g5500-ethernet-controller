@@ -25,6 +25,8 @@
 #include "usb/usb_shell.h"
 #include "web/web.h"
 #include "web/web_paths.h"
+#include "settings/settings.h"
+#include "crc/crc.h"
 
 //#define ELEVATION_ENABLED
 
