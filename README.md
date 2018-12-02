@@ -1,16 +1,15 @@
 # G-5500 Ethernet Rotator Controller [![Build Status](https://travis-ci.org/philcrump/g5500-ethernet-controller.svg?branch=master)](https://travis-ci.org/philcrump/g5500-ethernet-controller)
 
-Too many layers of software nowadays are used to simply point antennas. Here's to fixing that.
-
-![GB3HV Web Interface](https://raw.githubusercontent.com/philcrump/g5500-ethernet-controller/master/images/web-screenshot-gb3hv.png) ![GB3HV Azimuth-only Board on STM32F429ZI Nucleo](https://raw.githubusercontent.com/philcrump/g5500-ethernet-controller/master/images/board-photo-gb3hv.jpg)
-
-## Summary
-
 This project exists as firmware and a 'shield' board on an ST NUCLEO-STM32F429ZI Development Board.
 
 The firmware exposes a web server on port 80, through which the rotator can be monitored and commanded.
 
 This project is built on ChibiOS 17.6.x with LwIP 1.4.1
+
+<p float="left" align="middle">
+  <img src="/images/web-screenshot-gb3hv.png" width="49%" />
+  <img src="/images/board-photo-gb3hv.jpg" width="49%" />
+</p>
 
 ## Wiring
 
