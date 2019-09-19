@@ -207,10 +207,10 @@ static void http_server_serve(struct netconn *conn) {
       if(err == ERR_OK)
       {
         /* We got a second packet, append to buffer, checking first that we have space */
-        packetlen += netbuf_len(inbuf);
-        if(packetlen < WEB_MAX_PACKET_SIZE)
+        if((packetlen + netbuf_len(inbuf)) < WEB_MAX_PACKET_SIZE)
         {
           netbuf_copy(inbuf, &packet_buffer[packetlen], (WEB_MAX_PACKET_SIZE-packetlen));
+          packetlen += netbuf_len(inbuf);
           /* Try decoding the query string again */
           if(decode_body(packet_buffer, packetlen, postbody_buffer, WEB_MAX_POSTBODY_SIZE))
           {
