@@ -30,6 +30,7 @@
 
 #if LWIP_NETCONN
 
+static char packet_buffer[WEB_MAX_PACKET_SIZE];
 static char url_buffer[WEB_MAX_PATH_SIZE];
 static char postbody_buffer[WEB_MAX_POSTBODY_SIZE];
 /**
@@ -137,56 +138,95 @@ static bool decode_body(const char *buf, uint16_t buflen, char *outbuf, size_t m
 
 static void http_server_serve(struct netconn *conn) {
   struct netbuf *inbuf;
-  char *buf;
-  u16_t buflen;
   err_t err;
+  u16_t packetlen;
 
   /* Read the data from the port, blocking if nothing yet there.
    We assume the request (the part we care about) is in one netbuf */
   err = netconn_recv(conn, &inbuf);
 
-  if (err == ERR_OK) {
-    netbuf_data(inbuf, (void **)&buf, &buflen);
-
-    /* Is this an HTTP GET command? (only check the first 5 chars, since
-    there are other formats for GET, and we're keeping it very simple )*/
-    if (buflen>=5 &&
-        buf[0]=='G' &&
-        buf[1]=='E' &&
-        buf[2]=='T' &&
-        buf[3]==' ' &&
-        buf[4]=='/' ) {
-
-      if (!decode_url(buf + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
-        /* Invalid URL handling.*/
-        return;
-      }
-
-      web_paths_get(conn, url_buffer);
-    }
-    else if(buflen>=6 &&
-        buf[0]=='P' &&
-        buf[1]=='O' &&
-        buf[2]=='S' &&
-        buf[3]=='T' &&
-        buf[4]==' ' &&
-        buf[5]=='/' ) {
-
-      if (!decode_url(buf + 5, url_buffer, WEB_MAX_PATH_SIZE))
-      {
-        /* Invalid URL handling.*/
-        return;
-      }
-
-      if (!decode_body(buf, buflen, postbody_buffer, WEB_MAX_POSTBODY_SIZE))
-      {
-
-        return;
-      }
-
-      web_paths_post(conn, url_buffer, postbody_buffer);
-    }
+  if(err != ERR_OK)
+  {
+    netconn_close(conn);
+    netbuf_delete(inbuf);
+    return;
   }
+
+  packetlen = netbuf_len(inbuf);
+  /* Check we've got room for the packet */
+  if(packetlen >= WEB_MAX_PACKET_SIZE)
+  {
+    /* We haven't, fail */
+    netconn_close(conn);
+    netbuf_delete(inbuf);
+    return;
+  }
+  netbuf_copy(inbuf, packet_buffer, WEB_MAX_PACKET_SIZE);
+
+  /* Is this an HTTP GET command? (only check the first 5 chars, since
+  there are other formats for GET, and we're keeping it very simple )*/
+  if (packetlen>=5 &&
+      packet_buffer[0]=='G' &&
+      packet_buffer[1]=='E' &&
+      packet_buffer[2]=='T' &&
+      packet_buffer[3]==' ' &&
+      packet_buffer[4]=='/' ) {
+
+    if (!decode_url(packet_buffer + 4, url_buffer, WEB_MAX_PATH_SIZE)) {
+      /* Invalid URL handling.*/
+      netconn_close(conn);
+      netbuf_delete(inbuf);
+      return;
+    }
+
+    web_paths_get(conn, url_buffer);
+  }
+  else if(packetlen>=6 &&
+      packet_buffer[0]=='P' &&
+      packet_buffer[1]=='O' &&
+      packet_buffer[2]=='S' &&
+      packet_buffer[3]=='T' &&
+      packet_buffer[4]==' ' &&
+      packet_buffer[5]=='/' ) {
+
+    if (!decode_url(packet_buffer + 5, url_buffer, WEB_MAX_PATH_SIZE))
+    {
+      /* Invalid URL handling.*/
+      netconn_close(conn);
+      netbuf_delete(inbuf);
+      return;
+    }
+
+    if (!decode_body(packet_buffer, packetlen, postbody_buffer, WEB_MAX_POSTBODY_SIZE))
+    {
+      /* iOS quirk where sometimes the headers arrive in one packet and the query string in the next
+       *  I haven't found a nice way to deal with this so if we get here then we wait to see if there's more.
+       */
+      netbuf_delete(inbuf);
+      err = netconn_recv(conn, &inbuf);
+      if(err == ERR_OK)
+      {
+        /* We got a second packet, append to buffer, checking first that we have space */
+        packetlen += netbuf_len(inbuf);
+        if(packetlen < WEB_MAX_PACKET_SIZE)
+        {
+          netbuf_copy(inbuf, &packet_buffer[packetlen], (WEB_MAX_PACKET_SIZE-packetlen));
+          /* Try decoding the query string again */
+          if(decode_body(packet_buffer, packetlen, postbody_buffer, WEB_MAX_POSTBODY_SIZE))
+          {
+            web_paths_post(conn, url_buffer, postbody_buffer);
+          }
+        }
+      }
+
+      netconn_close(conn);
+      netbuf_delete(inbuf);
+      return;
+    }
+
+    web_paths_post(conn, url_buffer, postbody_buffer);
+  }
+
   /* Close the connection (server closes in HTTP) */
   netconn_close(conn);
 

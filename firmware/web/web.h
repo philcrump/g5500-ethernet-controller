@@ -36,6 +36,10 @@
 #define WEB_THREAD_PRIORITY     (LOWPRIO + 2)
 #endif
 
+#ifndef WEB_MAX_PACKET_SIZE
+#define WEB_MAX_PACKET_SIZE     2048
+#endif
+
 #ifndef WEB_MAX_PATH_SIZE
 #define WEB_MAX_PATH_SIZE       128
 #endif
