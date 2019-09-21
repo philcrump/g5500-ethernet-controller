@@ -4,6 +4,7 @@ var tracking_az_deg_desired_span = document.getElementById("tracking-az-deg-desi
 var tracking_cw_span = document.getElementById("tracking-cw-span");
 var tracking_ccw_span = document.getElementById("tracking-ccw-span");
 var stop_button = document.getElementById("stop-button");
+var submit_status_span = document.getElementById("submit-status-span");
 
 compass_needle.style.display = 'none';
 
@@ -62,8 +63,8 @@ function update_status()
         },
         function(error_status)
         {
-            document.getElementById("submit-status-span").textContent = "Error in status update request";
-            document.getElementById("submit-status-span").style.color = "red";
+            submit_status_span.textContent = "Error in status update request";
+            submit_status_span.style.color = "red";
 
             setTimeout(update_status, 500);
         }
@@ -110,15 +111,29 @@ function submit_bearing(desired_bearing)
       var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));
       if('error' in data)
       {
-        document.getElementById("submit-status-span").textContent = data.error;
-        document.getElementById("submit-status-span").style.color = "red";
+        submit_status_span.textContent = data.error;
+        submit_status_span.style.color = "red";
+      }
+    };
+    request.onerror = function()
+    {
+      var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));
+      if('error' in data)
+      {
+        submit_status_span.textContent = data.error;
+        submit_status_span.style.color = "red";
+      }
+      else
+      {
+        submit_status_span.textContent = "Unknown error in request.";
+        submit_status_span.style.color = "red";
       }
     };
     request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
     request.send(encodeURI('ddeg_az='+String(desired_bearing*10)+'&password='+String(password)));
 
-    document.getElementById("submit-status-span").textContent = "Command sent.";
-    document.getElementById("submit-status-span").style.color = "green";
+    submit_status_span.textContent = "Command sent.";
+    submit_status_span.style.color = "green";
 }
 
 document.getElementById("submit-button").onclick = function()
@@ -128,8 +143,8 @@ document.getElementById("submit-button").onclick = function()
     // Check for bearing input validity
     if(desired_bearing < 0 || desired_bearing > 360)
     {
-        document.getElementById("submit-status-span").textContent = "Error: Bearing input invalid (0=<x<=360.";
-        document.getElementById("submit-status-span").style.color = "red";
+        submit_status_span.textContent = "Error: Bearing input invalid (0=<x<=360.";
+        submit_status_span.style.color = "red";
         return;
     }
 
@@ -143,8 +158,8 @@ stop_button.onclick = function()
   // Check for empty password input
   if(password == "")
   {
-      document.getElementById("submit-status-span").textContent = "Error: Password input empty.";
-      document.getElementById("submit-status-span").style.color = "red";
+      submit_status_span.textContent = "Error: Password input empty.";
+      submit_status_span.style.color = "red";
       return;
   }
 
@@ -155,13 +170,27 @@ stop_button.onclick = function()
     var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));
     if('error' in data)
     {
-      document.getElementById("submit-status-span").textContent = data.error;
-      document.getElementById("submit-status-span").style.color = "red";
+      submit_status_span.textContent = data.error;
+      submit_status_span.style.color = "red";
+    }
+  };
+  request.onerror = function()
+  {
+    var data = JSON.parse(this.response.replace(/\n/g, "&#10;").replace(/\r/g, ""));
+    if('error' in data)
+    {
+      submit_status_span.textContent = data.error;
+      submit_status_span.style.color = "red";
+    }
+    else
+    {
+      submit_status_span.textContent = "Unknown error in request.";
+      submit_status_span.style.color = "red";
     }
   };
   request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
   request.send(encodeURI('password='+String(password)));
 
-  document.getElementById("submit-status-span").textContent = "Command sent.";
-  document.getElementById("submit-status-span").style.color = "green";
+  submit_status_span.textContent = "Command sent.";
+  submit_status_span.style.color = "green";
 }
