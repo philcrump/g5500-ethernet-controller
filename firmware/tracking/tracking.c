@@ -48,10 +48,10 @@ static int16_t tracking_el_calibration[TRACKING_CALIBRATION_ENTRIES][2] =
 static int16_t tracking_az_calibration[TRACKING_CALIBRATION_ENTRIES][2] = 
 {  
    {0,355},
-   {900,972},
-   {1800,1590},
-   {2700,2206},
-   {3600,2813}
+   {900,1048},
+   {1800,1727},
+   {2700,2409},
+   {3600,3075}
 };
 static int16_t tracking_el_calibration[TRACKING_CALIBRATION_ENTRIES][2] = 
 {  
